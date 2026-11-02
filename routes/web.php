@@ -84,6 +84,20 @@ Route::get('/detail_umkm/{id}', function($id) {
     $produks = Produk::where('user_id', $umkm->id)->get();
     return view('detail_umkm', compact('umkm', 'produks'));
 });
+Route::get('/detail_produk/{id}', function($id) {
+    $produk = Produk::with('user')->findOrFail($id);
+    $produkLainnya = Produk::with('user')
+        ->where('id', '!=', $produk->id)
+        ->where(function ($query) use ($produk) {
+            $query->where('kategori', $produk->kategori)
+                ->orWhere('user_id', $produk->user_id);
+        })
+        ->latest()
+        ->take(3)
+        ->get();
+
+    return view('detail_produk', compact('produk', 'produkLainnya'));
+});
 Route::get('/daftar_produk', function () {
     $q = request('q');
     $produks = Produk::with('user');

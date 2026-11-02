@@ -50,8 +50,11 @@
             {{-- Lokasi toko: $product->user->alamat_umkm --}}
         </div>
 
-        <a href="{{ $phone ? 'https://wa.me/' . $phone : url('detail_umkm/' . ($store->id ?? '')) }}" target="{{ $phone ? '_blank' : '_self' }}" rel="{{ $phone ? 'noopener noreferrer' : '' }}" class="mt-4 inline-flex h-10 items-center justify-center rounded-lg bg-[#147b7b] px-4 text-sm font-semibold text-white transition hover:bg-[#0e6262] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b] focus-visible:ring-offset-2">
-            {{ $phone ? 'Hubungi penjual' : 'Lihat detail' }}
-        </a>
+        <div class="mt-4 grid grid-cols-2 gap-2">
+            <a href="{{ url('detail_produk/' . $product->id) }}" class="inline-flex h-10 items-center justify-center rounded-lg border border-[#147b7b] px-2 text-xs font-semibold text-[#147b7b] transition hover:bg-[#edf8f5] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b] focus-visible:ring-offset-2">Lihat detail</a>
+            @if($phone)
+                <a href="{{ 'https://wa.me/' . $phone }}" target="_blank" rel="noopener noreferrer" class="inline-flex h-10 items-center justify-center rounded-lg bg-[#147b7b] px-2 text-xs font-semibold text-white transition hover:bg-[#0e6262] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b] focus-visible:ring-offset-2">Hubungi</a>
+            @endif
+        </div>
     </div>
 </article>

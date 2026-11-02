@@ -6,6 +6,7 @@
     if (str_starts_with($phone, '0')) {
         $phone = '62' . substr($phone, 1);
     }
+    $is
 @endphp
 <!DOCTYPE html>
 <html lang="id">
