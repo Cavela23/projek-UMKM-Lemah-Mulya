@@ -75,9 +75,12 @@ Route::get('/daftar_umkm', function () {
     return view('daftar_umkm', compact('umkms', 'categories'));
 });
 Route::get('umkm/edit', function() {
-    $user = Auth::user();
+    if (!session('user_id')) {
+        return redirect('login');
+    }
+    $user = User::find(session('user_id'));
     return view('edit_umkm', compact('user'));
-});
+})->name('umkm.edit');
 Route::delete('/umkm/{id}', [App\Http\Controllers\UmkmController::class, 'destroy'])->name('umkm.destroy');
 Route::get('/detail_umkm/{id}', function($id) {
     $umkm = User::findOrFail($id);

@@ -1,582 +1,291 @@
-<!-- Standalone profile page, no layout -->
-<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-<div class="relative w-full h-64 bg-blue-200 rounded-b-lg overflow-hidden">
-    <img src="/img/banner_1.jpg" class="w-full h-full object-cover" alt="Banner">
-    <button class="absolute left-4 md:left-8 top-4 md:top-6 bg-gray-200 text-gray-800 rounded-lg px-6 py-3 text-sm md:text-base font-medium shadow-md hover:bg-gray-300" onclick="window.location.href='/'">Back</button>
-    <a href="{{ url('umkm/edit') }}" class="absolute right-4 md:right-8 top-4 md:top-6 bg-blue-600 text-white rounded-lg px-6 py-3 text-sm md:text-base font-medium shadow-md hover:bg-blue-700">Edit UMKM</a>
-</div>
-<div class="flex flex-col md:flex-row items-center md:items-end gap-6 md:gap-8 relative -top-16 px-6 md:px-8">
-    <div class="w-28 h-28 md:w-36 md:h-36 bg-white rounded-full shadow-md flex items-center justify-center overflow-hidden relative">
-        <img src="{{ isset($user) && $user && !empty($user->profile_photo) ? asset('profile_photos/' . $user->profile_photo) : asset('img/user_icon.png') }}" alt="User" class="w-24 h-24 md:w-32 md:h-32 object-cover rounded-full">
-        <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="absolute bottom-2 right-2">
-            @csrf
-            @method('PUT')
-            <label for="profile-photo" class="bg-blue-600 w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center shadow-md cursor-pointer">
-                <svg width="20" height="20" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 1 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
-                <input type="file" id="profile-photo" name="profile_photo" accept="image/*" class="hidden" onchange="this.form.submit()">
-            </label>
-        </form>
-    </div>
-    <div class="flex flex-col items-center md:items-start">
-        <div class="text-xl md:text-3xl font-bold text-gray-800">{{ isset($user) && $user ? $user->name : 'Nama UMKM' }}</div>
-        <div class="text-gray-600 text-sm md:text-base">{{ isset($user) && $user ? $user->email : 'umkm@email.com' }}</div>
-        <div class="text-gray-500 text-sm md:text-base">{{ isset($user) && $user ? $user->nama_umkm ?? '-' : '-' }}</div>
-        <div class="text-gray-500 text-sm md:text-base">{{ isset($user) && $user ? $user->alamat_umkm ?? '-' : '-' }}</div>
-    </div>
-</div>
-<div class="flex justify-center border-b border-gray-200 mt-6">
-    @if(isset($user) && $user && $user->role === 'admin')
-        <button id="tab-umkm" class="px-4 py-2 text-blue-600 font-semibold border-b-2 border-blue-600 text-sm md:text-base">Daftar UMKM</button>
-        <button id="tab-produk" class="px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent text-sm md:text-base hover:text-blue-600 hover:border-blue-600">Daftar Produk</button>
-    @else
-        <button id="tab-overview" class="px-4 py-2 text-blue-600 font-semibold border-b-2 border-blue-600 text-sm md:text-base">Ringkasan</button>
-        <button id="tab-customer" class="px-4 py-2 text-gray-500 font-semibold border-b-2 border-transparent text-sm md:text-base hover:text-blue-600 hover:border-blue-600">Daftar Produk</button>
-    @endif
-</div>
-<div class="mt-6 md:mt-8 px-6 md:px-8">
-    @if(isset($user) && $user && $user->role === 'admin')
-        <div id="section-umkm" class="mt-6 md:mt-8 px-6 md:px-8">
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8">
-                <div class="bg-gray-50 p-6 md:p-8 rounded-lg shadow-md w-full md:w-1/3">
-                    <form id="search-umkm-form" method="GET" action="" class="flex flex-col gap-4">
-                        <input type="text" id="search-umkm" name="search" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" placeholder="Cari UMKM..." value="{{ request('search') }}">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm md:text-base font-medium hover:bg-blue-700">Cari</button>
-                    </form>
-                </div>
-                <div class="flex-1">
-                    <div class="mb-6">
-                        <span class="text-lg md:text-xl font-semibold">Daftar UMKM</span>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full border-collapse bg-white">
-                            <thead>
-                                <tr class="bg-gray-100">
-                                    <th class="px-4 py-2 text-left border-b text-sm md:text-base">Nama UMKM</th>
-                                    <th class="px-4 py-2 text-left border-b text-sm md:text-base">Email</th>
-                                    <th class="px-4 py-2 text-left border-b text-sm md:text-base">Alamat</th>
-                                    <th class="px-4 py-2 text-left border-b text-sm md:text-base">Kategori</th>
-                                    <th class="px-4 py-2 text-left border-b text-sm md:text-base">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $query = request('search');
-                                    $umkms = \App\Models\User::where('role', 'user')
-                                        ->when($query, function($q) use ($query) {
-                                            $q->where(function($sub) use ($query) {
-                                                $sub->where('nama_umkm', 'like', "%$query%")
-                                                    ->orWhere('email', 'like', "%$query%")
-                                                    ->orWhere('alamat_umkm', 'like', "%$query%")
-                                                    ->orWhere('kategori_umkm', 'like', "%$query%")
-                                                    ->orWhere('deskripsi_umkm', 'like', "%$query%")
-                                                    ->orWhere('phone', 'like', "%$query%")
-                                                    ;
-                                            });
-                                        })
-                                        ->get();
-                                @endphp
-                                @forelse($umkms as $umkm)
-                                <tr>
-                                    <td class="px-4 py-2 border-b text-sm md:text-base">{{ $umkm->nama_umkm ?? '-' }}</td>
-                                    <td class="px-4 py-2 border-b text-sm md:text-base">{{ $umkm->email }}</td>
-                                    <td class="px-4 py-2 border-b text-sm md:text-base">{{ $umkm->alamat_umkm ?? '-' }}</td>
-                                    <td class="px-4 py-2 border-b text-sm md:text-base">{{ $umkm->kategori_umkm ?? '-' }}</td>
-                                    <td class="px-4 py-2 border-b text-sm md:text-base">
-                                        <form method="POST" action="{{ url('umkm/' . $umkm->id) }}" class="inline" onsubmit="return confirm('Yakin ingin menghapus UMKM ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg text-sm md:text-base font-medium hover:bg-red-600">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" class="text-center text-gray-500 py-4 text-sm md:text-base">Belum ada UMKM.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+@php
+    $isAdmin = isset($user) && $user && $user->role === 'admin';
+    $profileName = isset($user) && $user ? ($user->nama_umkm ?: $user->name) : 'Profil pengguna';
+    $profileImage = isset($user) && $user && $user->profile_photo
+        ? asset('profile_photos/' . $user->profile_photo)
+        : asset('img/user_icon.png');
+    $initials = collect(explode(' ', trim($user->name ?? 'PU')))
+        ->filter()
+        ->take(2)
+        ->map(fn ($name) => strtoupper(substr($name, 0, 1)))
+        ->implode('');
+    $productsQuery = \App\Models\Produk::with('user');
+    if (!$isAdmin && isset($user) && $user) {
+        $productsQuery->where('user_id', $user->id);
+    }
+    $products = $productsQuery
+        ->when(request('search_produk'), function ($query, $search) {
+            $query->where('nama_produk', 'like', '%' . $search . '%');
+        })
+        ->latest()
+        ->get();
+@endphp
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil pengguna - UMKM Lemahmulya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-[#f7faf9] text-[#263b3b]">
+    <div class="flex min-h-screen">
+        <aside class="hidden w-[238px] shrink-0 border-r border-[#e5eeec] bg-white lg:flex lg:flex-col">
+            <a href="{{ url('/') }}" class="flex h-[84px] items-center gap-2 border-b border-[#edf3f1] px-7">
+                <img src="{{ asset('img/logo-web-umkm.png') }}" alt="" class="h-10 w-10 object-contain">
+                <span class="leading-tight">
+                    <strong class="block text-[10px] font-extrabold tracking-tight text-[#073f3b]">UMKM DESA</strong>
+                    <strong class="block text-[10px] font-extrabold tracking-tight text-[#073f3b]">LEMAHMULYA</strong>
+                    <small class="mt-1 block text-[7px] tracking-[0.13em] text-slate-400">RUANG UMKM LOKAL</small>
+                </span>
+            </a>
+            <nav class="flex-1 space-y-1 px-4 py-7" aria-label="Navigasi profil">
+                <p class="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Menu utama</p>
+                <a href="{{ url('/') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">⌂</span> Beranda
+                </a>
+                <a href="{{ route('umkm.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">▦</span> Profil UMKM
+                </a>
+                <a href="{{ url('profile_page?tab=produk') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◫</span> Produk saya
+                </a>
+                <p class="px-3 pb-2 pt-8 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Akun</p>
+                <a href="{{ url('profile_page') }}" class="flex items-center gap-3 rounded-lg bg-[#e8f6f3] px-3 py-3 text-sm font-bold text-[#147b7b]">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-[#147b7b] text-xs text-white">◎</span> Profil pengguna
+                </a>
+            </nav>
+            <div class="border-t border-[#edf3f1] p-4">
+                <form method="POST" action="{{ url('logout') }}">
+                    @csrf
+                    <button class="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">↪</span> Keluar
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        <div class="min-w-0 flex-1">
+            <header class="flex h-[84px] items-center justify-between border-b border-[#e5eeec] bg-white px-5 sm:px-8 lg:px-11">
+                <div class="flex items-center gap-3">
+                    <a href="{{ url('/') }}" class="lg:hidden">
+                        <img src="{{ asset('img/logo-web-umkm.png') }}" alt="Beranda" class="h-9 w-9 object-contain">
+                    </a>
+                    <div>
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#147b7b]">Akun saya</p>
+                        <h1 class="mt-1 text-xl font-extrabold text-[#073f3b] sm:text-2xl">Profil pengguna</h1>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div id="section-produk" class="mt-6 md:mt-8 px-6 md:px-8" style="display:none;">
-            <div class="flex flex-col md:flex-row gap-6 md:gap-8 mb-4">
-                <div class="bg-gray-50 p-6 md:p-8 rounded-lg shadow-md w-full md:w-1/3">
-                    <form id="search-produk-form" method="GET" action="" class="flex flex-col gap-4">
-                        <input type="text" id="search-produk" name="search_produk" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" placeholder="Cari Produk..." value="{{ request('search_produk') }}">
-                        <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm md:text-base font-medium hover:bg-blue-700">Cari</button>
-                    </form>
-                </div>
-                <div class="flex-1">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-                        <span class="profile-label" style="font-size:1.2em;">Daftar Produk</span>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table style="width:100%;border-collapse:collapse;background:#fff;">
-                            <thead>
-                                <tr style="background:#f3f4f6;">
-                                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Nama Produk</th>
-                                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Kategori</th>
-                                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Harga</th>
-                                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">UMKM</th>
-                                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @php
-                                    $queryProduk = request('search_produk');
-                                    $produks = \App\Models\Produk::with('user')
-                                        ->when($queryProduk, function($q) use ($queryProduk) {
-                                            $q->where('nama_produk', 'like', "%$queryProduk%");
-                                        })
-                                        ->get();
-                                @endphp
-                                @forelse($produks as $produk)
-                                <tr>
-                                    <td style="padding:10px 8px;">{{ $produk->nama_produk }}</td>
-                                    <td style="padding:10px 8px;">{{ $produk->kategori ?? '-' }}</td>
-                                    <td style="padding:10px 8px;">Rp {{ number_format($produk->harga,0,',','.') }}</td>
-                                    <td style="padding:10px 8px;">{{ $produk->user->nama_umkm ?? $produk->user->name ?? '-' }}</td>
-                                    <td style="padding:10px 8px;">
-                                        <a href="{{ url('produk/edit/' . $produk->id) }}" style="background:#f59e42;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:6px;display:inline-block;text-align:center;">Ubah</a>
-                                        <form method="POST" action="{{ url('produk/' . $produk->id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" style="background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;">Hapus</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                @empty
-                                <tr>
-                                    <td colspan="5" style="text-align:center;color:#888;padding:16px 0;">Belum ada produk.</td>
-                                </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
+                <div class="flex items-center gap-3">
+                    <a href="{{ url('/') }}" class="hidden text-sm font-medium text-slate-400 transition hover:text-[#147b7b] sm:block">Kembali ke beranda</a>
+                    <div class="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#dcefeb] text-sm font-bold text-[#147b7b]">
+                        @if(isset($user) && $user && $user->profile_photo)
+                            <img src="{{ $profileImage }}" alt="{{ $profileName }}" class="h-full w-full object-cover">
+                        @else
+                            {{ $initials ?: 'PU' }}
+                        @endif
                     </div>
                 </div>
-            </div>
-        </div>
-    @else
-    <div id="section-overview" class="mt-6 md:mt-8 px-6 md:px-8">
-        <div class="mb-6">
-            <span class="block text-lg md:text-xl font-semibold">Alamat UMKM</span>
-            <input type="text" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" value="{{ isset($user) && $user ? $user->alamat_umkm ?? '-' : '-' }}" readonly>
-        </div>
-        <div class="mb-6">
-            <span class="block text-lg md:text-xl font-semibold">Deskripsi UMKM</span>
-            <textarea class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" rows="3" readonly>{{ isset($user) && $user ? $user->deskripsi_umkm ?? '-' : '-' }}</textarea>
-        </div>
-        <div class="flex flex-wrap gap-6">
-            <div class="flex-1 min-w-[220px]">
-                <span class="block text-lg md:text-xl font-semibold">General E-mail</span>
-                <input type="email" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" value="{{ isset($user) && $user ? $user->email : 'umkm@email.com' }}" readonly>
-            </div>
-            <div class="flex-1 min-w-[220px]">
-                <span class="block text-lg md:text-xl font-semibold">Phone number</span>
-                <input type="text" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" value="{{ isset($user) && $user ? $user->phone ?? '-' : '-' }}" readonly>
-            </div>
-        </div>
-        <div class="mb-6">
-            <span class="block text-lg md:text-xl font-semibold">Kategori UMKM</span>
-            <input type="text" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" value="{{ isset($user) && $user ? $user->kategori_umkm ?? '-' : '-' }}" readonly>
-        </div>
-    @endif
-</div>
-<!-- Modal Edit UMKM (Bootstrap, overlay, di luar konten utama) -->
-<style>
-@media (max-width: 600px) {
-  .modal-tambah-produk {
-    max-width: 98vw !important;
-    width: 98vw !important;
-    transform: scale(1.12);
-  }
-}
-</style>
-<!-- Modal tambah kategori dihapus -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching untuk user biasa
-    const tabOverview = document.getElementById('tab-overview');
-    const tabCustomer = document.getElementById('tab-customer');
-    const sectionOverview = document.getElementById('section-overview');
-    const sectionProduk = document.getElementById('section-produk');
+            </header>
 
-    // Tab switching untuk admin
-    const tabUmkm = document.getElementById('tab-umkm');
-    const tabProduk = document.getElementById('tab-produk');
-    const sectionUmkm = document.getElementById('section-umkm');
-    const sectionProdukAdmin = document.getElementById('section-produk');
-
-    // Untuk user biasa
-    if (tabOverview && tabCustomer && sectionOverview && sectionProduk) {
-        // Cek apakah ada query search_produk di URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const adaSearchProduk = urlParams.has('search_produk') && urlParams.get('search_produk').trim() !== '';
-        if (adaSearchProduk) {
-            sectionOverview.style.display = 'none';
-            sectionProduk.style.display = 'block';
-            tabOverview.classList.remove('border-blue-600', 'text-blue-600');
-            tabCustomer.classList.add('border-blue-600', 'text-blue-600');
-        } else {
-            sectionOverview.style.display = 'block';
-            sectionProduk.style.display = 'none';
-            tabOverview.classList.add('border-blue-600', 'text-blue-600');
-            tabCustomer.classList.remove('border-blue-600', 'text-blue-600');
-        }
-        tabOverview.addEventListener('click', function() {
-            tabOverview.classList.add('border-blue-600', 'text-blue-600');
-            tabCustomer.classList.remove('border-blue-600', 'text-blue-600');
-            sectionOverview.style.display = 'block';
-            sectionProduk.style.display = 'none';
-        });
-        tabCustomer.addEventListener('click', function() {
-            tabCustomer.classList.add('border-blue-600', 'text-blue-600');
-            tabOverview.classList.remove('border-blue-600', 'text-blue-600');
-            sectionOverview.style.display = 'none';
-            sectionProduk.style.display = 'block';
-        });
-    }
-
-    // Untuk admin
-    if (tabUmkm && tabProduk && sectionUmkm && sectionProdukAdmin) {
-        // Default: tampilkan UMKM, sembunyikan produk
-        sectionUmkm.style.display = 'block';
-        sectionProdukAdmin.style.display = 'none';
-        tabUmkm.classList.add('border-blue-600', 'text-blue-600');
-        tabProduk.classList.remove('border-blue-600', 'text-blue-600');
-        tabUmkm.addEventListener('click', function() {
-            tabUmkm.classList.add('border-blue-600', 'text-blue-600');
-            tabProduk.classList.remove('border-blue-600', 'text-blue-600');
-            sectionUmkm.style.display = 'block';
-            sectionProdukAdmin.style.display = 'none';
-        });
-        tabProduk.addEventListener('click', function() {
-            tabProduk.classList.add('border-blue-600', 'text-blue-600');
-            tabUmkm.classList.remove('border-blue-600', 'text-blue-600');
-            sectionUmkm.style.display = 'none';
-            sectionProdukAdmin.style.display = 'block';
-        });
-    }
-
-    // Modal Tambah Produk
-    const tambahBtn = document.querySelector('.tambah-produk-btn');
-    if (tambahBtn) {
-        tambahBtn.addEventListener('click', function() {
-            document.getElementById('tambahProdukModal').style.display = 'flex';
-        });
-    }
-    window.closeTambahProdukModal = function() {
-        document.getElementById('tambahProdukModal').style.display = 'none';
-    };
-    // Jika input search produk dikosongkan, submit otomatis agar semua produk muncul
-    var searchProdukInput = document.getElementById('search-produk');
-    if (searchProdukInput) {
-        searchProdukInput.addEventListener('input', function() {
-            if (this.value.trim() === '') {
-                this.form.submit();
-            }
-        });
-    }
-    var editUmkmModal = document.getElementById('editUmkmModal');
-    if (editUmkmModal) {
-        editUmkmModal.addEventListener('show.bs.modal', function() {
-            editUmkmModal.removeAttribute('inert');
-            editUmkmModal.setAttribute('aria-hidden', 'false');
-        });
-        editUmkmModal.addEventListener('hide.bs.modal', function() {
-            editUmkmModal.setAttribute('inert', '');
-            editUmkmModal.removeAttribute('aria-hidden');
-        });
-    }
-});
-</script>
-
-</div>
-<div class="profile-section" id="section-produk" style="display:none;">
-
-    <div class="flex flex-col md:flex-row gap-6 md:gap-8 mb-4">
-        <div class="bg-gray-50 p-6 md:p-8 rounded-lg shadow-md w-full md:w-1/3">
-            <form id="search-produk-form" method="GET" action="" class="flex flex-col gap-4">
-                <input type="text" id="search-produk" name="search_produk" class="w-full px-4 py-2 border rounded-lg text-sm md:text-base" placeholder="Cari Produk..." value="{{ request('search_produk') }}">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm md:text-base font-medium hover:bg-blue-700">Cari</button>
-            </form>
-        </div>
-        <div class="flex-1">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-                <span class="profile-label" style="font-size:1.2em;">Daftar Produk</span>
-                @if(!(isset($user) && $user && $user->role === 'admin'))
-                    <button class="tambah-produk-btn" style="position:static;padding:8px 18px;font-size:1em;" type="button">Tambah Produk</button>
+            <main class="mx-auto max-w-[1180px] px-5 py-7 sm:px-8 sm:py-10 lg:px-11">
+                @if(session('success'))
+                    <div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
                 @endif
-            </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%;border-collapse:collapse;background:#fff;">
-            <thead>
-                <tr style="background:#f3f4f6;">
-                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Nama Produk</th>
-                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Kategori</th>
-                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Harga</th>
-                    @if(isset($user) && $user && $user->role === 'admin')
-                        <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">UMKM</th>
-                    @endif
-                    <th style="padding:12px 8px;text-align:left;border-bottom:1px solid #e5e7eb;">Aksi</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php
-                    $queryProduk = request('search_produk');
-                    if(isset($user) && $user && $user->role === 'admin') {
-                        $produks = \App\Models\Produk::with('user')
-                            ->when($queryProduk, function($q) use ($queryProduk) {
-                                $q->where('nama_produk', 'like', "%$queryProduk%");
-                            })
-                            ->get();
-                    } elseif(isset($user) && $user) {
-                        $produks = \App\Models\Produk::where('user_id', $user->id)
-                            ->when($queryProduk, function($q) use ($queryProduk) {
-                                $q->where('nama_produk', 'like', "%$queryProduk%");
-                            })
-                            ->get();
-                    } else {
-                        $produks = [];
-                    }
-                @endphp
-                @forelse($produks as $produk)
-                <tr>
-                    <td style="padding:10px 8px;">{{ $produk->nama_produk }}</td>
-                    <td style="padding:10px 8px;">{{ $produk->kategori ?? '-' }}</td>
-                    <td style="padding:10px 8px;">Rp {{ number_format($produk->harga,0,',','.') }}</td>
-                    @if(isset($user) && $user && $user->role === 'admin')
-                        <td style="padding:10px 8px;">{{ $produk->user->nama_umkm ?? $produk->user->name ?? '-' }}</td>
-                    @endif
-                    <td style="padding:10px 8px;">
-                        <a href="{{ url('produk/edit/' . $produk->id) }}" style="background:#f59e42;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;margin-right:6px;display:inline-block;text-align:center;">Ubah</a>
-                        <form method="POST" action="{{ url('produk/' . $produk->id) }}" style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus produk ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" style="background:#ef4444;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;">Hapus</button>
-                        </form>
-                    </td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="@if(isset($user) && $user && $user->role === 'admin') 5 @else 4 @endif" style="text-align:center;color:#888;padding:16px 0;">Belum ada produk.</td>
-                </tr>
-                @endforelse
-            </tbody>
-        </table>
-    </div>
-    <!-- Modal Tambah Produk (pindahkan ke luar section agar tidak terbungkus) -->
-    <div id="tambahProdukModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:999;align-items:center;justify-content:center;">
-        <div class="modal-tambah-produk" style="background:#fff;padding:32px 24px;border-radius:16px;max-width:430px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);position:relative;">
-            <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:18px;">Tambah Produk</h2>
-            <form method="POST" action="{{ url('tambah-produk') }}" enctype="multipart/form-data">
-                @csrf
-                <div style="display:flex;gap:12px;align-items:center;margin-bottom:14px;">
-                    <div style="flex:1;">
-                        <label class="profile-label" style="margin-bottom:4px;display:block;">Nama Produk</label>
-                        <input type="text" name="nama_produk" class="profile-input" style="width:100%;" required>
+                @if($errors->any())
+                    <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <ul class="list-inside list-disc space-y-1">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
                     </div>
-                    <div style="flex:1;">
-                        <label class="profile-label" style="margin-bottom:4px;display:block;">Harga</label>
-                        <input type="number" name="harga" class="profile-input" style="width:100%;" required>
+                @endif
+
+                <section class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)] sm:p-7">
+                    <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                        <div class="flex items-center gap-4">
+                            <div class="relative flex h-[68px] w-[68px] shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#e2f1ee] text-xl font-extrabold text-[#147b7b]">
+                                @if(isset($user) && $user && $user->profile_photo)
+                                    <img src="{{ $profileImage }}" alt="{{ $profileName }}" class="h-full w-full object-cover">
+                                @else
+                                    {{ $initials ?: 'PU' }}
+                                @endif
+                                @if(!$isAdmin && isset($user) && $user)
+                                    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data" class="absolute inset-0">
+                                        @csrf
+                                        @method('PUT')
+                                        <label for="profile-photo" class="flex h-full w-full cursor-pointer items-end justify-end p-1.5">
+                                            <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#147b7b] text-xs text-white shadow">✎</span>
+                                            <input type="file" id="profile-photo" name="profile_photo" accept="image/*" class="hidden" onchange="this.form.submit()">
+                                        </label>
+                                    </form>
+                                @endif
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400">{{ $isAdmin ? 'Administrator' : 'Pelaku usaha' }}</p>
+                                <h2 class="mt-1 text-xl font-extrabold text-[#073f3b]">{{ $profileName }}</h2>
+                                <p class="mt-1 text-sm text-slate-400">{{ $user->email ?? 'email@umkm.local' }}</p>
+                            </div>
+                        </div>
+                        @if(!$isAdmin)
+                            <a href="{{ url('umkm/edit') }}" class="inline-flex h-10 items-center justify-center rounded-lg border border-[#147b7b] px-4 text-sm font-semibold text-[#147b7b] transition hover:bg-[#147b7b] hover:text-white">Edit profil usaha</a>
+                        @endif
                     </div>
+                </section>
+
+                <div class="mt-7 border-b border-[#dfeae8]">
+                    <nav class="flex gap-7 overflow-x-auto" aria-label="Tab profil">
+                        @if($isAdmin)
+                            <button type="button" data-tab="umkm" class="whitespace-nowrap border-b-2 border-[#147b7b] pb-3 text-sm font-bold text-[#147b7b]">Kelola UMKM</button>
+                            <button type="button" data-tab="produk" class="whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">Daftar produk</button>
+                        @else
+                            <button type="button" data-tab="overview" class="whitespace-nowrap border-b-2 border-[#147b7b] pb-3 text-sm font-bold text-[#147b7b]">Profil pengguna</button>
+                            <button type="button" data-tab="produk" class="whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">Produk saya</button>
+                        @endif
+                    </nav>
                 </div>
-                <div style="margin-bottom:14px;">
-                    <label class="profile-label" style="margin-bottom:4px;display:block;">Deskripsi Produk</label>
-                    <textarea name="deskripsi" class="profile-input" rows="3" style="width:100%;" required></textarea>
-                </div>
-                <div style="margin-bottom:14px;">
-                    <label class="profile-label" style="margin-bottom:4px;display:block;">Kategori</label>
-                    <input type="text" name="kategori" class="profile-input" style="width:100%;" required>
-                </div>
-                <div style="margin-bottom:14px;">
-                    <label class="profile-label" style="margin-bottom:4px;display:block;">Foto Produk</label>
-                    <input type="file" name="foto_produk" class="profile-input" accept="image/*" required>
-                </div>
-                <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:18px;">
-                    <button type="button" onclick="closeTambahProdukModal()" style="background:#eee;color:#222;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;">Batal</button>
-                    <button type="submit" style="background:#2563eb;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;">Simpan</button>
-                </div>
-            </form>
-            <style>
-            @media (max-width: 600px) {
-              .modal-tambah-produk {
-                max-width: 98vw !important;
-                width: 98vw !important;
-                transform: scale(1.12);
-                /* Zoom in modal on mobile */
-              }
-            }
-            </style>
-            <button onclick="closeTambahProdukModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;color:#888;cursor:pointer;">&times;</button>
+
+                @if($isAdmin)
+                    <section data-section="umkm" class="mt-7">
+                        @php
+                            $adminUmkms = \App\Models\User::whereIn('role', ['user', 'umkm'])
+                                ->when(request('search'), function ($query, $search) {
+                                    $query->where(function ($nested) use ($search) {
+                                        $nested->where('nama_umkm', 'like', '%' . $search . '%')->orWhere('email', 'like', '%' . $search . '%')->orWhere('kategori_umkm', 'like', '%' . $search . '%');
+                                    });
+                                })->get();
+                        @endphp
+                        <div class="mb-5 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                            <div><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#147b7b]">Administrasi</p><h2 class="mt-1 text-2xl font-extrabold text-[#073f3b]">Daftar UMKM</h2></div>
+                            <form method="GET" class="flex w-full max-w-sm gap-2"><input type="search" name="search" value="{{ request('search') }}" placeholder="Cari UMKM..." class="h-10 min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-3 text-sm outline-none focus:border-[#147b7b]"><button class="rounded-lg bg-[#147b7b] px-4 text-sm font-semibold text-white">Cari</button></form>
+                        </div>
+                        <div class="overflow-x-auto rounded-xl border border-[#e0ece9] bg-white"><table class="w-full min-w-[680px] text-left text-sm"><thead class="bg-[#f1f8f6] text-xs uppercase tracking-wide text-[#147b7b]"><tr><th class="px-5 py-4">Nama UMKM</th><th class="px-5 py-4">Email</th><th class="px-5 py-4">Kategori</th><th class="px-5 py-4">Aksi</th></tr></thead><tbody class="divide-y divide-slate-100">@forelse($adminUmkms as $umkm)<tr class="hover:bg-slate-50"><td class="px-5 py-4 font-semibold text-[#073f3b]">{{ $umkm->nama_umkm ?: $umkm->name }}</td><td class="px-5 py-4 text-slate-500">{{ $umkm->email }}</td><td class="px-5 py-4 text-slate-500">{{ $umkm->kategori_umkm ?: '-' }}</td><td class="px-5 py-4"><form method="POST" action="{{ url('umkm/' . $umkm->id) }}" onsubmit="return confirm('Yakin ingin menghapus UMKM ini?')">@csrf @method('DELETE')<button class="font-semibold text-red-500 hover:text-red-700">Hapus</button></form></td></tr>@empty<tr><td colspan="4" class="px-5 py-12 text-center text-slate-400">Belum ada UMKM.</td></tr>@endforelse</tbody></table></div>
+                    </section>
+                @else
+                    <section data-section="overview" class="mt-7">
+                        <div class="mb-5"><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#147b7b]">Informasi akun</p><h2 class="mt-1 text-2xl font-extrabold text-[#073f3b]">Informasi profil</h2></div>
+                        <div class="grid gap-5 lg:grid-cols-[1.35fr_0.65fr]">
+                            <div class="rounded-xl border border-[#e0ece9] bg-white p-6 shadow-[0_2px_12px_rgba(27,74,70,0.04)]">
+                                <div class="grid gap-6 sm:grid-cols-2">
+                                    <div><p class="text-xs text-slate-400">Nama lengkap</p><p class="mt-2 text-sm font-bold text-[#073f3b]">{{ $user->name ?? 'Belum diisi' }}</p></div>
+                                    <div><p class="text-xs text-slate-400">Nomor telepon</p><p class="mt-2 text-sm font-bold text-[#073f3b]">{{ $user->phone ?? 'Belum diisi' }}</p></div>
+                                    <div><p class="text-xs text-slate-400">Email</p><p class="mt-2 text-sm font-bold text-[#073f3b]">{{ $user->email ?? 'Belum diisi' }}</p></div>
+                                    <div><p class="text-xs text-slate-400">Kategori usaha</p><p class="mt-2 text-sm font-bold text-[#073f3b]">{{ $user->kategori_umkm ?? 'Belum diisi' }}</p></div>
+                                </div>
+                                <div class="mt-7 border-t border-slate-100 pt-6"><p class="text-xs text-slate-400">Deskripsi usaha</p><p class="mt-2 text-sm leading-6 text-slate-600">{{ $user->deskripsi_umkm ?? 'Tambahkan deskripsi usaha Anda agar lebih mudah dikenal warga.' }}</p></div>
+                            </div>
+                            <div class="rounded-xl border border-[#e0ece9] bg-white p-6 shadow-[0_2px_12px_rgba(27,74,70,0.04)]">
+                                <div class="flex items-center justify-between"><h3 class="font-bold text-[#073f3b]">Aktivitas akun</h3><span class="h-2 w-2 rounded-full bg-emerald-500"></span></div>
+                                <div class="mt-6 space-y-5 text-sm"><div><p class="text-xs text-slate-400">Status akun</p><p class="mt-1 font-bold text-emerald-600">Aktif</p></div><div><p class="text-xs text-slate-400">Alamat usaha</p><p class="mt-1 font-semibold leading-5 text-[#073f3b]">{{ $user->alamat_umkm ?? 'Belum diisi' }}</p></div><div><p class="text-xs text-slate-400">Peran</p><p class="mt-1 font-semibold text-[#073f3b]">Pelaku usaha</p></div></div>
+                            </div>
+                        </div>
+                        <div class="mt-7 rounded-xl border border-[#e0ece9] bg-white p-6 shadow-[0_2px_12px_rgba(27,74,70,0.04)]"><div class="flex items-center justify-between"><div><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#147b7b]">Usaha yang Anda kelola</p><h2 class="mt-1 text-xl font-extrabold text-[#073f3b]">{{ $profileName }}</h2></div><a href="{{ route('umkm.edit') }}" class="text-sm font-bold text-[#147b7b] hover:underline">Edit</a></div><div class="mt-5 flex flex-col gap-4 rounded-lg bg-[#f4faf8] p-4 sm:flex-row sm:items-center"><div class="h-20 w-24 shrink-0 overflow-hidden rounded-lg bg-[#dcefeb]"><img src="{{ $profileImage }}" alt="{{ $profileName }}" class="h-full w-full object-cover"></div><div class="min-w-0"><p class="text-sm font-bold text-[#073f3b]">{{ $profileName }}</p><p class="mt-1 text-xs text-slate-500">{{ $user->kategori_umkm ?? 'Kategori usaha' }} · {{ $user->alamat_umkm ?? 'Lemahmulya' }}</p><p class="mt-2 line-clamp-2 text-xs leading-5 text-slate-500">{{ $user->deskripsi_umkm ?? 'Belum ada deskripsi usaha.' }}</p></div><a href="{{ route('umkm.edit') }}" class="sm:ml-auto inline-flex h-9 shrink-0 items-center justify-center rounded-lg bg-[#147b7b] px-4 text-xs font-bold text-white hover:bg-[#0e6262]">Profil usaha</a></div></div>
+                    </section>
+                @endif
+
+                <section data-section="produk" class="mt-7 hidden">
+                    <div class="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#147b7b]">Katalog usaha</p>
+                            <h2 class="mt-1 text-2xl font-extrabold text-[#073f3b]">Produk saya</h2>
+                            <p class="mt-2 text-sm text-slate-400">Kelola semua produk yang ditampilkan dari {{ $profileName }}.</p>
+                        </div>
+                        @if(!$isAdmin)
+                            <button type="button" data-open-product-modal class="inline-flex h-10 items-center justify-center rounded-lg bg-[#147b7b] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#0e6262]">+ Tambah produk</button>
+                        @endif
+                    </div>
+
+                    <div class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)] sm:p-6">
+                        <div class="mb-5 flex flex-col justify-between gap-3 border-b border-slate-100 pb-5 sm:flex-row sm:items-center">
+                            <div>
+                                <h3 class="font-bold text-[#073f3b]">Daftar produk</h3>
+                                <p class="mt-1 text-xs text-slate-400">{{ $products->count() }} produk tersedia</p>
+                            </div>
+                            <form method="GET" class="flex gap-2">
+                                <input type="hidden" name="tab" value="produk">
+                                <input type="search" name="search_produk" value="{{ request('search_produk') }}" placeholder="Cari produk..." class="h-10 w-full rounded-lg border border-slate-200 bg-[#fbfdfc] px-3 text-sm outline-none transition focus:border-[#147b7b] sm:w-56">
+                                <button class="rounded-lg border border-[#147b7b] px-4 text-sm font-semibold text-[#147b7b] transition hover:bg-[#eaf6f3]">Cari</button>
+                            </form>
+                        </div>
+
+                        <div class="space-y-3">
+                            @forelse($products as $product)
+                                @php
+                                    $productImage = $product->foto_produk
+                                        ? asset('profile_photos/' . $product->foto_produk)
+                                        : asset('img/UMKM.png');
+                                @endphp
+                                <article class="group flex flex-col gap-4 rounded-lg border border-slate-100 bg-[#fbfdfc] p-3 transition hover:border-[#b8ded7] hover:bg-[#f5fbf9] sm:flex-row sm:items-center sm:p-4">
+                                    <div class="h-28 w-full shrink-0 overflow-hidden rounded-lg bg-[#e6f3f0] sm:h-24 sm:w-28">
+                                        <img src="{{ $productImage }}" alt="{{ $product->nama_produk }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-105">
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex flex-wrap items-start justify-between gap-2">
+                                            <div>
+                                                <span class="inline-flex rounded-full bg-[#e2f2ef] px-2.5 py-1 text-[10px] font-bold text-[#147b7b]">{{ $product->kategori ?: 'Produk lokal' }}</span>
+                                                <h3 class="mt-2 text-base font-extrabold text-[#073f3b]">{{ $product->nama_produk }}</h3>
+                                            </div>
+                                            @if($product->harga !== null)
+                                                <p class="text-sm font-extrabold text-[#147b7b]">Rp {{ number_format($product->harga, 0, ',', '.') }}</p>
+                                            @endif
+                                        </div>
+                                        <p class="mt-2 line-clamp-2 text-sm leading-5 text-slate-500">{{ $product->deskripsi ?: 'Belum ada deskripsi produk.' }}</p>
+                                    </div>
+                                    <div class="flex shrink-0 gap-2 sm:flex-col">
+                                        <a href="{{ url('produk/edit/' . $product->id) }}" class="inline-flex h-9 flex-1 items-center justify-center rounded-lg border border-[#147b7b] px-3 text-xs font-bold text-[#147b7b] transition hover:bg-[#e2f2ef] sm:flex-none">Edit</a>
+                                        <form method="POST" action="{{ route('produk.destroy', $product->id) }}" onsubmit="return confirm('Hapus produk ini?')" class="flex-1 sm:flex-none">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="inline-flex h-9 w-full items-center justify-center rounded-lg border border-red-200 px-3 text-xs font-bold text-red-500 transition hover:bg-red-50">Hapus</button>
+                                        </form>
+                                    </div>
+                                </article>
+                            @empty
+                                <div class="rounded-lg border border-dashed border-slate-200 bg-[#fbfdfc] px-6 py-14 text-center">
+                                    <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#e2f2ef] text-xl text-[#147b7b]">◫</div>
+                                    <h3 class="mt-4 font-bold text-[#073f3b]">Belum ada produk</h3>
+                                    <p class="mt-1 text-sm text-slate-400">Tambahkan produk pertama untuk menampilkannya di katalog usaha.</p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
-<script>
-// Modal Edit Produk
-function openEditProdukModal() {
-    document.getElementById('editProdukModal').style.display = 'flex';
-}
-function closeEditProdukModal() {
-    document.getElementById('editProdukModal').style.display = 'none';
-}
-// Handle klik tombol edit produk
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.edit-produk-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var id = this.getAttribute('data-id');
-            console.log('[Edit Produk] Tombol edit diklik, id:', id);
-            fetch('/produk/' + id + '/edit')
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Gagal fetch data produk. Status: ' + response.status);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('[Edit Produk] Data produk diterima:', data);
-                    document.getElementById('edit_nama_produk').value = data.nama_produk;
-                    document.getElementById('edit_harga').value = data.harga;
-                    document.getElementById('edit_deskripsi').value = data.deskripsi ?? data.deskripsi_produk ?? '';
-                    // Isi dropdown kategori jika ada data kategori
-                    var kategoriSelect = document.getElementById('edit_kategori');
-                    if (kategoriSelect) {
-                        // Jika data.kategori ada, set value, jika tidak, kosongkan
-                        let kategoriVal = data.kategori ?? '';
-                        let found = false;
-                        for (let i = 0; i < kategoriSelect.options.length; i++) {
-                            if (kategoriSelect.options[i].value === kategoriVal) {
-                                kategoriSelect.selectedIndex = i;
-                                found = true;
-                                break;
-                            }
-                        }
-                        if (!found && kategoriVal) {
-                            // Tambahkan option jika belum ada
-                            let opt = document.createElement('option');
-                            opt.value = kategoriVal;
-                            opt.textContent = kategoriVal;
-                            kategoriSelect.appendChild(opt);
-                            kategoriSelect.value = kategoriVal;
-                        }
-                        if (!kategoriVal) kategoriSelect.selectedIndex = 0;
-                    }
-                    // Set form action
-                    var form = document.getElementById('editProdukForm');
-                    form.action = '/produk/' + id;
-                    console.log('[Edit Produk] Modal akan dibuka');
-                    openEditProdukModal();
-                })
-                .catch(function(err) {
-                    console.error('[Edit Produk] Error:', err);
-                    alert('Gagal mengambil data produk. Pastikan server berjalan dan endpoint benar.\n' + err);
-                });
-        });
-    });
-});
 
-@if(!(isset($user) && $user && $user->role === 'admin'))
-<!-- Modal Tambah Produk -->
-<div id="tambahProdukModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:999;align-items:center;justify-content:center;">
-    <div style="background:#fff;padding:32px 24px;border-radius:16px;max-width:400px;width:100%;box-shadow:0 2px 16px rgba(0,0,0,0.12);position:relative;">
-        <h2 style="font-size:1.3rem;font-weight:700;margin-bottom:18px;">Tambah Produk</h2>
-        <form method="POST" action="{{ url('tambah-produk') }}" enctype="multipart/form-data">
-            @csrf
-            <label class="profile-label">Nama Produk</label>
-            <input type="text" name="nama_produk" class="profile-input" required>
-            <label class="profile-label">Harga</label>
-            <input type="number" name="harga" class="profile-input" required>
-            <label class="profile-label">Deskripsi Produk</label>
-            <textarea name="deskripsi" class="profile-input" rows="3" required></textarea>
-            <label class="profile-label">Kategori</label>
-            <select name="kategori" id="tambah_kategori" class="profile-input">
-                <option value="">Pilih Kategori</option>
-            </select>
-            <label class="profile-label">Foto Produk</label>
-            <input type="file" name="foto_produk" class="profile-input" accept="image/*" required>
-            <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:18px;">
-                <button type="button" onclick="closeTambahProdukModal()" style="background:#eee;color:#222;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;">Batal</button>
-                <button type="submit" style="background:#2563eb;color:#fff;border:none;padding:8px 18px;border-radius:8px;cursor:pointer;">Simpan</button>
+    @if(!$isAdmin)
+        <div id="product-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-[#073f3b]/40 px-5 py-8">
+            <div class="max-h-full w-full max-w-lg overflow-y-auto rounded-xl bg-white p-6 shadow-2xl sm:p-8">
+                <div class="flex items-start justify-between"><div><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-[#147b7b]">Karya baru</p><h2 class="mt-1 text-2xl font-extrabold text-[#073f3b]">Tambah produk</h2></div><button type="button" data-close-product-modal class="text-2xl text-slate-400 hover:text-slate-700" aria-label="Tutup">&times;</button></div>
+                <form method="POST" action="{{ url('tambah-produk') }}" enctype="multipart/form-data" class="mt-6 space-y-4">@csrf<div><label class="mb-1.5 block text-sm font-semibold text-[#073f3b]">Nama produk</label><input type="text" name="nama_produk" required class="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm"></div><div class="grid gap-4 sm:grid-cols-2"><div><label class="mb-1.5 block text-sm font-semibold text-[#073f3b]">Harga</label><input type="number" name="harga" required class="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm"></div><div><label class="mb-1.5 block text-sm font-semibold text-[#073f3b]">Kategori</label><input type="text" name="kategori" required class="h-11 w-full rounded-lg border border-slate-200 px-3 text-sm"></div></div><div><label class="mb-1.5 block text-sm font-semibold text-[#073f3b]">Deskripsi</label><textarea name="deskripsi" rows="4" required class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"></textarea></div><div><label class="mb-1.5 block text-sm font-semibold text-[#073f3b]">Foto produk</label><input type="file" name="foto_produk" accept="image/*" class="block w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"></div><div class="flex justify-end gap-3 pt-2"><button type="button" data-close-product-modal class="rounded-lg px-4 py-2.5 text-sm font-semibold text-slate-500 hover:bg-slate-100">Batal</button><button type="submit" class="rounded-lg bg-[#147b7b] px-5 py-2.5 text-sm font-bold text-white">Simpan produk</button></div></form>
             </div>
-        </form>
-        <button onclick="closeTambahProdukModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:1.5rem;color:#888;cursor:pointer;">&times;</button>
-    </div>
-</div>
-@endif
-    </div>
-</div>
-<script>
-// Semua script di bawah ini dijalankan setelah seluruh elemen HTML (termasuk modal) sudah ada
-document.addEventListener('DOMContentLoaded', function() {
-    // Tab switching
-    const tabOverview = document.getElementById('tab-overview');
-    const tabCustomer = document.getElementById('tab-customer');
-    const sectionOverview = document.getElementById('section-overview');
-    const sectionProduk = document.getElementById('section-produk');
+        </div>
+    @endif
 
-    if (tabOverview && tabCustomer && sectionOverview && sectionProduk) {
-        sectionOverview.style.display = 'block';
-        sectionProduk.style.display = 'none';
-        tabOverview.classList.add('border-blue-600', 'text-blue-600');
-        tabCustomer.classList.remove('border-blue-600', 'text-blue-600');
-
-        tabOverview.addEventListener('click', function() {
-            tabOverview.classList.add('border-blue-600', 'text-blue-600');
-            tabCustomer.classList.remove('border-blue-600', 'text-blue-600');
-            sectionOverview.style.display = 'block';
-            sectionProduk.style.display = 'none';
-        });
-
-        tabCustomer.addEventListener('click', function() {
-            tabCustomer.classList.add('border-blue-600', 'text-blue-600');
-            tabOverview.classList.remove('border-blue-600', 'text-blue-600');
-            sectionOverview.style.display = 'none';
-            sectionProduk.style.display = 'block';
-        });
-    }
-
-    // Modal Tambah Produk
-    var tambahBtn = document.querySelector('.tambah-produk-btn');
-    if (tambahBtn) {
-        tambahBtn.addEventListener('click', function() {
-            var modal = document.getElementById('tambahProdukModal');
-            if (!modal) {
-                alert('Modal tambah produk tidak ditemukan di halaman.');
-                return;
-            }
-            modal.style.display = 'flex';
-            // Load kategori dari database ke dropdown tambah produk
-            fetch('/kategori/all')
-                .then(res => res.json())
-                .then(kats => {
-                    var select = document.getElementById('tambah_kategori');
-                    if (select) {
-                        select.innerHTML = '<option value="">Pilih Kategori</option>';
-                        kats.forEach(function(kat) {
-                            var opt = document.createElement('option');
-                            opt.value = kat.nama_kategori;
-                            opt.textContent = kat.nama_kategori;
-                            select.appendChild(opt);
-                        });
-                    }
+    <script>
+        (() => {
+            const tabs = [...document.querySelectorAll('[data-tab]')];
+            const sections = [...document.querySelectorAll('[data-section]')];
+            const activate = (name) => {
+                tabs.forEach((tab) => {
+                    const active = tab.dataset.tab === name;
+                    tab.classList.toggle('border-[#147b7b]', active);
+                    tab.classList.toggle('text-[#147b7b]', active);
+                    tab.classList.toggle('font-bold', active);
+                    tab.classList.toggle('border-transparent', !active);
+                    tab.classList.toggle('text-slate-400', !active);
                 });
-        });
-    }
-    window.closeTambahProdukModal = function() {
-        var modal = document.getElementById('tambahProdukModal');
-        if (modal) modal.style.display = 'none';
-    };
-});
-
-</script>
-
-<!-- Bootstrap CSS (jika belum ada, tambahkan di <head> atau di sini) -->
-<!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"> -->
-
-<!-- Bootstrap JS (wajib untuk modal) -->
-
-<script>
-</script>
-
-<!-- End profile page -->
+                sections.forEach((section) => section.classList.toggle('hidden', section.dataset.section !== name));
+            };
+            tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.tab)));
+            const requestedTab = new URLSearchParams(window.location.search).get('tab');
+            if (requestedTab && tabs.some((tab) => tab.dataset.tab === requestedTab)) {
+                activate(requestedTab);
+            }
+            const modal = document.getElementById('product-modal');
+            document.querySelector('[data-open-product-modal]')?.addEventListener('click', () => modal?.classList.replace('hidden', 'flex'));
+            document.querySelectorAll('[data-close-product-modal]').forEach((button) => button.addEventListener('click', () => modal?.classList.replace('flex', 'hidden')));
+        })();
+    </script>
+</body>
+</html>

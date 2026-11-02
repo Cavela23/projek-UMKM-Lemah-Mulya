@@ -11,7 +11,7 @@
         : asset('img/UMKM.png');
 @endphp
 
-<article class="group flex h-full min-w-[272px] snap-start flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg sm:min-w-[300px]">
+<article class="group flex h-full min-w-0 snap-start flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg">
     <div class="relative h-48 overflow-hidden bg-[#edf8f5]">
         <img src="{{ $image }}" alt="{{ $product->nama_produk }}" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
         <span class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-[#147b7b] shadow-sm">
