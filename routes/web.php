@@ -65,7 +65,14 @@ Route::get('/daftar_umkm', function () {
         });
     }
     $umkms = $umkms->get();
-    return view('daftar_umkm', compact('umkms'));
+    $categories = User::where('role', 'user')
+        ->whereNotNull('kategori_umkm')
+        ->where('kategori_umkm', '!=', '')
+        ->distinct()
+        ->orderBy('kategori_umkm')
+        ->pluck('kategori_umkm');
+
+    return view('daftar_umkm', compact('umkms', 'categories'));
 });
 Route::get('umkm/edit', function() {
     $user = Auth::user();

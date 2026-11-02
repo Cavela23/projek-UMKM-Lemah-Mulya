@@ -1,165 +1,135 @@
+@php
+    $umkmImage = $umkm->profile_photo
+        ? asset('profile_photos/' . $umkm->profile_photo)
+        : asset('img/UMKM.png');
+    $phone = preg_replace('/[^0-9]/', '', $umkm->phone ?? '');
+    if (str_starts_with($phone, '0')) {
+        $phone = '62' . substr($phone, 1);
+    }
+@endphp
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Detail UMKM</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    .produk-card img {
-      width: 100%;
-      max-width: 140px;
-      height: 100px;
-      object-fit: cover;
-      border-radius: 12px;
-      margin-bottom: 12px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $umkm->nama_umkm ?: $umkm->name }} - UMKM Lemahmulya</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white text-gray-800">
-  <!-- Header -->
-  <header class="w-full fixed top-0 bg-white shadow z-50">
-    <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-      <!-- Left nav -->
-      <nav class="hidden md:flex gap-6 text-sm font-semibold">
-        <a href="/" class="hover:text-blue-600">BERANDA</a>
-        <a href="/daftar_umkm" class="hover:text-blue-600">UMKM</a>
-      </nav>
-      <!-- Logo -->
-      <div class="text-xl font-bold text-blue-900 italic">
-        <img src="/img/UMKM(1).png" alt="UMKM Lemahmulya" class="h-8">
-      </div>
-      <!-- Right nav -->
-      <nav class="hidden md:flex gap-6 text-sm font-semibold">
-        <a href="/daftar_produk" class="hover:text-blue-600">PRODUK</a>
-        @if(session('user_id'))
-        <div class="flex items-center gap-2 relative">
-          <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-          <span>{{ session('user_name') }}</span>
-          <button id="dropdownButton" class="text-gray-600 focus:outline-none">&#9660;</button>
-          <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-            <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-            <form method="POST" action="{{ url('logout') }}" class="block">
-              @csrf
-              <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-            </form>
-          </div>
-        </div>
-        @else
-        <a href="/login" class="hover:text-blue-600">MASUK</a>
-        @endif
-      </nav>
-      <!-- Mobile Hamburger -->
-      <div class="md:hidden">
-        <button id="hamburger" class="text-2xl">&#9776;</button>
-      </div>
-    </div>
-    <!-- Mobile Menu -->
-    <div id="mobileMenu" class="hidden md:hidden flex-col bg-white px-4 py-4 space-y-2 text-sm font-semibold">
-      <a href="/" class="block hover:text-blue-600">BERANDA</a>
-      <a href="/daftar_umkm" class="block hover:text-blue-600">UMKM</a>
-      <a href="/daftar_produk" class="block hover:text-blue-600">PRODUK</a>
-      @if(session('user_id'))
-      <div class="flex items-center gap-2">
-        <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-        <span>{{ session('user_name') }}</span>
-        <button id="mobileDropdownButton" class="text-gray-600 focus:outline-none">&#9660;</button>
-        <div id="mobileDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-          <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-          <form method="POST" action="{{ url('logout') }}" class="block">
-            @csrf
-            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-          </form>
-        </div>
-      </div>
-      @else
-      <a href="/login" class="block hover:text-blue-600">MASUK</a>
-      @endif
-    </div>
-  </header>
 
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto pt-24 px-4 pb-12">
-    <div class="flex flex-col lg:flex-row gap-6">
-      <!-- Sidebar UMKM -->
-      <aside class="bg-gray-100 p-6 rounded-xl shadow flex flex-col items-center w-full lg:w-1/4">
-        <img src="{{ $umkm->profile_photo ? asset('profile_photos/' . $umkm->profile_photo) : asset('img/UMKM.png') }}"
-             alt="Foto {{ $umkm->nama_umkm }}"
-             class="w-24 h-24 object-cover rounded-full mb-4">
-        <h2 class="text-lg font-semibold text-center">{{ $umkm->nama_umkm }}</h2>
-        <p class="text-gray-700 text-center"><b>Kategori:</b> {{ $umkm->kategori_umkm }}</p>
-        <p class="text-gray-700 text-center"><b>Alamat:</b> {{ $umkm->alamat_umkm }}</p>
-        <p class="text-gray-500 text-sm text-center"><b>Email:</b> {{ $umkm->email }}</p>
-        <p class="text-gray-500 text-sm text-center"><b>No HP:</b> {{ $umkm->phone }}</p>
-      </aside>
+<body class="bg-white text-slate-700">
+    @include('components.navbar')
 
-      <!-- Produk UMKM -->
-      <section class="flex-1">
-        <h2 class="text-xl font-bold mb-6">Produk dari {{ $umkm->nama_umkm }}</h2>
-        @if($produks->count())
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
-          @foreach($produks as $produk)
-          <div class="produk-card bg-white rounded-xl shadow p-4 flex flex-col items-center text-center">
-            <img src="{{ $produk->foto_produk ? asset('profile_photos/' . $produk->foto_produk) : asset('img/UMKM.png') }}" alt="Foto {{ $produk->nama_produk }}">
-            <h3 class="text-base font-semibold mt-2">{{ $produk->nama_produk }}</h3>
-            <p class="text-green-600 font-semibold text-sm">Rp {{ number_format($produk->harga, 0, ',', '.') }}</p>
-            @php
-              $nohp = $umkm->phone ?? '';
-              // Hilangkan spasi dan strip
-              $nohp = preg_replace('/[^0-9]/', '', $nohp);
-              // Jika nomor mulai dengan 0, ganti jadi 62
-              if (substr($nohp, 0, 1) === '0') {
-                $nohp = '62' . substr($nohp, 1);
-              }
-            @endphp
-            <a href="https://wa.me/{{ $nohp }}" target="_blank" class="mt-3 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">Beli</a>
-          </div>
-          @endforeach
+    <main class="mx-auto max-w-7xl px-5 pb-16 pt-[112px] sm:px-8 lg:px-12">
+        <nav class="mb-6 flex items-center gap-2 text-xs text-slate-400" aria-label="Breadcrumb">
+            <a href="{{ url('/') }}" class="transition hover:text-[#147b7b]">Beranda</a>
+            <span aria-hidden="true">/</span>
+            <a href="{{ url('/daftar_umkm') }}" class="transition hover:text-[#147b7b]">UMKM</a>
+            <span aria-hidden="true">/</span>
+            <span class="truncate text-slate-500">{{ $umkm->nama_umkm ?: $umkm->name }}</span>
+        </nav>
+
+        <section class="overflow-hidden rounded-[22px] border border-[#d6e8e4] bg-[#edf8f5]">
+            <div class="grid lg:grid-cols-12">
+                <div class="relative min-h-[280px] lg:col-span-6 lg:min-h-[390px]">
+                    <img src="{{ $umkmImage }}" alt="Foto {{ $umkm->nama_umkm ?: $umkm->name }}" class="absolute inset-0 h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                    <span class="absolute bottom-5 left-5 rounded-full bg-white/95 px-3 py-1.5 text-xs font-semibold text-[#147b7b] shadow-sm">
+                        {{ $umkm->kategori_umkm ?: 'UMKM lokal' }}
+                    </span>
+                </div>
+                <div class="flex flex-col justify-center px-6 py-8 sm:px-10 lg:col-span-6 lg:px-12">
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#147b7b] sm:text-xs">Profil usaha lokal</p>
+                    <h1 class="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-[#073f3b] sm:text-4xl">
+                        {{ $umkm->nama_umkm ?: $umkm->name }}
+                    </h1>
+                    <p class="mt-4 max-w-xl text-sm leading-6 text-slate-500">
+                        {{ $umkm->deskripsi_umkm ?: 'Cerita, karya, dan produk pilihan dari pelaku UMKM Lemahmulya.' }}
+                    </p>
+                    <div class="mt-5 flex items-center gap-2 text-sm text-slate-500">
+                        <svg class="h-4 w-4 shrink-0 text-[#147b7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" />
+                            <circle cx="12" cy="9" r="2.2" stroke-width="1.8" />
+                        </svg>
+                        <span>{{ $umkm->alamat_umkm ?: 'Lemahmulya' }}</span>
+                    </div>
+                    @if($phone)
+                        <a href="https://wa.me/{{ $phone }}" target="_blank" rel="noopener noreferrer" class="mt-7 inline-flex h-11 w-full items-center justify-center rounded-lg bg-[#147b7b] px-5 text-sm font-bold text-white transition hover:bg-[#0e6262] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b] focus-visible:ring-offset-2 sm:w-fit">
+                            Hubungi {{ $umkm->nama_umkm ?: 'penjual' }}
+                            <span class="ml-2 text-lg font-normal" aria-hidden="true">→</span>
+                        </a>
+                    @endif
+                </div>
+            </div>
+        </section>
+
+        <div class="mt-8 grid gap-8 lg:grid-cols-12">
+            <section class="lg:col-span-8">
+                <div class="flex gap-6 border-b border-slate-200 text-sm font-semibold">
+                    <a href="#tentang" class="border-b-2 border-[#147b7b] pb-3 text-[#147b7b]">Tentang usaha</a>
+                    <a href="#produk" class="pb-3 text-slate-400 transition hover:text-[#147b7b]">Produk ({{ $produks->count() }})</a>
+                </div>
+                <div id="tentang" class="pt-6">
+                    <h2 class="text-xl font-extrabold text-[#073f3b]">Cerita dari {{ $umkm->nama_umkm ?: $umkm->name }}</h2>
+                    <p class="mt-3 text-sm leading-7 text-slate-500">
+                        {{ $umkm->deskripsi_umkm ?: 'Usaha lokal yang tumbuh bersama masyarakat Desa Lemahmulya. Temukan produk pilihan dan dukung karya warga di sini.' }}
+                    </p>
+                </div>
+
+                <div id="produk" class="mt-10">
+                    <div class="mb-5 flex items-end justify-between gap-4">
+                        <div>
+                            <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#147b7b]">Karya pilihan</p>
+                            <h2 class="mt-1 text-2xl font-extrabold text-[#073f3b]">Produk dari usaha ini</h2>
+                        </div>
+                        <span class="text-xs text-slate-400">{{ $produks->count() }} produk</span>
+                    </div>
+                    @if($produks->isNotEmpty())
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                            @foreach($produks as $produk)
+                                @include('components.product-card', ['product' => $produk])
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500">
+                            Belum ada produk yang ditambahkan oleh usaha ini.
+                        </div>
+                    @endif
+                </div>
+            </section>
+
+            <aside class="h-fit rounded-2xl border border-slate-100 bg-white p-5 shadow-sm lg:col-span-4">
+                <h2 class="text-lg font-extrabold text-[#073f3b]">Informasi usaha</h2>
+                <dl class="mt-5 space-y-4 text-sm">
+                    <div class="flex gap-3">
+                        <dt class="w-20 shrink-0 text-slate-400">Kategori</dt>
+                        <dd class="font-semibold text-slate-600">{{ $umkm->kategori_umkm ?: 'UMKM lokal' }}</dd>
+                    </div>
+                    <div class="flex gap-3">
+                        <dt class="w-20 shrink-0 text-slate-400">Lokasi</dt>
+                        <dd class="font-semibold text-slate-600">{{ $umkm->alamat_umkm ?: 'Lemahmulya' }}</dd>
+                    </div>
+                    @if($umkm->email)
+                        <div class="flex gap-3">
+                            <dt class="w-20 shrink-0 text-slate-400">Email</dt>
+                            <dd class="break-all font-semibold text-slate-600">{{ $umkm->email }}</dd>
+                        </div>
+                    @endif
+                    @if($umkm->phone)
+                        <div class="flex gap-3">
+                            <dt class="w-20 shrink-0 text-slate-400">Telepon</dt>
+                            <dd class="font-semibold text-slate-600">{{ $umkm->phone }}</dd>
+                        </div>
+                    @endif
+                </dl>
+                @if($phone)
+                    <a href="https://wa.me/{{ $phone }}" target="_blank" rel="noopener noreferrer" class="mt-6 inline-flex w-full items-center justify-center rounded-lg border border-[#147b7b] px-4 py-2.5 text-sm font-semibold text-[#147b7b] transition hover:bg-[#147b7b] hover:text-white">Tanya tentang produk</a>
+                @endif
+            </aside>
         </div>
-        @else
-          <p class="text-gray-500 text-sm">Belum ada produk untuk UMKM ini.</p>
-        @endif
-      </section>
-    </div>
-  </main>
+    </main>
 
-  <!-- Script for mobile menu -->
-  <script>
-    const hamburger = document.getElementById('hamburger');
-    const mobileMenu = document.getElementById('mobileMenu');
-    hamburger.addEventListener('click', () => {
-      mobileMenu.classList.toggle('hidden');
-    });
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const dropdownButton = document.getElementById('dropdownButton');
-      const dropdownMenu = document.getElementById('dropdownMenu');
-      if (dropdownButton && dropdownMenu) {
-        dropdownButton.addEventListener('click', function(e) {
-          e.stopPropagation();
-          dropdownMenu.classList.toggle('hidden');
-        });
-        document.addEventListener('click', function() {
-          dropdownMenu.classList.add('hidden');
-        });
-      }
-    });
-  </script>
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      const mobileDropdownButton = document.getElementById('mobileDropdownButton');
-      const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
-      if (mobileDropdownButton && mobileDropdownMenu) {
-        mobileDropdownButton.addEventListener('click', function(e) {
-          e.stopPropagation();
-          mobileDropdownMenu.classList.toggle('hidden');
-        });
-        document.addEventListener('click', function() {
-          mobileDropdownMenu.classList.add('hidden');
-        });
-      }
-    });
-  </script>
+    @include('components.footer')
 </body>
+
 </html>

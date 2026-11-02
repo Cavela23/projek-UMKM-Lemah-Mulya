@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Produk;
 
 class UmkmController extends Controller
 {
@@ -11,7 +12,15 @@ class UmkmController extends Controller
     public function index()
     {
         $umkms = User::where('role', 'user')->get();
-        return view('welcome', compact('umkms'));
+        $products = Produk::with('user')->latest()->take(8)->get();
+        $categories = User::where('role', 'user')
+            ->whereNotNull('kategori_umkm')
+            ->where('kategori_umkm', '!=', '')
+            ->distinct()
+            ->orderBy('kategori_umkm')
+            ->pluck('kategori_umkm');
+
+        return view('welcome', compact('umkms', 'products', 'categories'));
     }
 
     // Halaman edit UMKM

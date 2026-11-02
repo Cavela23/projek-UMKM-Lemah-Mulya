@@ -9,156 +9,92 @@
 </head>
 
 <body class="bg-white text-gray-800">
-    <!-- Header -->
-    <header class="w-full fixed top-0 bg-white shadow z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Left nav -->
-            <nav class="hidden md:flex gap-6 text-sm font-semibold">
-                <a href="/" class="hover:text-blue-600">BERANDA</a>
-                <a href="/daftar_umkm" class="hover:text-blue-600">UMKM</a>
-            </nav>
-            <!-- Logo -->
-            <div class="text-xl font-bold text-blue-900 italic">
-                <img src="/img/UMKM(1).png" alt="UMKM Lemahmulya" class="h-8">
-            </div>
-            <!-- Right nav -->
-            <nav class="hidden md:flex gap-6 text-sm font-semibold">
-                <a href="/daftar_produk" class="hover:text-blue-600">PRODUK</a>
-                @if(session('user_id'))
-                <div class="flex items-center gap-2 relative">
-                    <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-                    <span>{{ session('user_name') }}</span>
-                    <button id="dropdownButton" class="text-gray-600 focus:outline-none">
-                        &#9660;
-                    </button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                        <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                        <form method="POST" action="{{ url('logout') }}" class="block">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                @else
-                <a href="/login" class="hover:text-blue-600">MASUK</a>
-                @endif
-            </nav>
-            <!-- Mobile Hamburger -->
-            <div class="md:hidden">
-                <button id="hamburger" class="text-2xl">&#9776;</button>
-            </div>
-        </div>
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden flex-col bg-white px-4 py-4 space-y-2 text-sm font-semibold">
-            <a href="/" class="block hover:text-blue-600">BERANDA</a>
-            <a href="/daftar_umkm" class="block hover:text-blue-600">UMKM</a>
-            <a href="/daftar_produk" class="block hover:text-blue-600">PRODUK</a>
-            @if(session('user_id'))
-            <div class="flex items-center gap-2">
-                <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-                <span>{{ session('user_name') }}</span>
-                <button id="mobileDropdownButton" class="text-gray-600 focus:outline-none">
-                    &#9660;
-                </button>
-                <div id="mobileDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                    <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                    <form method="POST" action="{{ url('logout') }}" class="block">
-                        @csrf
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                    </form>
-                </div>
-            </div>
-            @else
-            <a href="/login" class="block hover:text-blue-600">MASUK</a>
-            @endif
-        </div>
-    </header>
+    @include('components.navbar')
 
     <!-- Hero Section -->
-    <section class="pt-24 bg-gradient-to-r from-cyan-500 to-blue-500 text-white">
-        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center gap-6">
-            <!-- Gambar -->
+    <section class="bg-white px-5 pb-10 pt-[112px] sm:px-8 lg:px-12 lg:pb-14">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="mb-4 flex items-center justify-between px-1 text-[11px] text-slate-400 sm:text-xs">
+                <span class="inline-flex items-center gap-1.5">
+                    <svg class="h-3.5 w-3.5 text-[#147b7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" />
+                        <circle cx="12" cy="9" r="2.2" stroke-width="1.8" />
+                    </svg>
+                    Dari warga, untuk Lemahmulya.
+                </span>
+            </div>
 
-            <!-- Teks -->
-            <div class="flex-1 py-6 text-left">
-                <h1 class="text-2xl font-bold mb-4">Selamat Datang di Website Resmi UMKM Lemahmulya</h1>
-                <p class="text-base leading-relaxed">Temukan informasi, produk, dan kegiatan terbaru dari UMKM kami yang terus berkembang bersama masyarakat. Website ini menjadi etalase digital untuk memperkenalkan karya dan inovasi pelaku UMKM Desa Lemahmulya.</p>
+            <div class="grid overflow-hidden rounded-[22px] border border-[#d6e8e4] bg-[#edf8f5] shadow-sm lg:grid-cols-12">
+                <div class="flex flex-col justify-center px-6 py-9 sm:px-10 sm:py-12 lg:col-span-7 lg:px-12 lg:py-14">
+                    <p class="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-[#147b7b] sm:text-xs">Kenali tetangga, dukung usahanya</p>
+                    <h1 class="max-w-xl text-3xl font-extrabold leading-[1.08] tracking-tight text-[#073f3b] sm:text-4xl lg:text-[48px]">
+                        Temukan yang istimewa,<br class="hidden sm:block"> dari Lemahmulya.
+                    </h1>
+                    <p class="mt-4 max-w-lg text-sm leading-6 text-slate-500 sm:text-base">
+                        Jelajahi usaha, produk, dan karya warga. Belanja dekat, manfaatnya untuk masyarakat.
+                    </p>
+
+                    <form method="GET" action="{{ url('/daftar_umkm') }}" class="mt-7 grid w-full grid-cols-[minmax(0,1fr)_auto] items-stretch overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-[#147b7b]/30">
+                        <label for="hero-search" class="sr-only">Cari usaha atau produk lokal</label>
+                        <div class="flex min-w-0 items-center gap-2 px-3 sm:px-4">
+                            <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35m2.1-5.15a7.25 7.25 0 1 1-14.5 0 7.25 7.25 0 0 1 14.5 0Z" />
+                            </svg>
+                            <input id="hero-search" type="search" name="q" value="{{ request('q') }}" placeholder="Cari usaha atau produk lokal..." class="h-12 min-w-0 w-full border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400">
+                        </div>
+                        <button type="submit" class="h-12 min-w-[68px] bg-[#147b7b] px-4 text-sm font-semibold text-white transition hover:bg-[#0e6262] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white">
+                            Cari
+                        </button>
+                    </form>
+                </div>
+
+                <div class="relative min-h-[230px] lg:col-span-5 lg:min-h-[390px]">
+                    <img src="{{ asset('img/latar.jpg') }}" alt="Aktivitas warga di lahan pertanian Lemahmulya" class="absolute inset-0 h-full w-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-r from-[#edf8f5]/30 via-transparent to-transparent"></div>
+                    <div class="absolute bottom-4 left-4 rounded-full bg-white/90 px-3 py-1.5 text-[10px] font-medium text-slate-600 shadow-sm backdrop-blur-sm sm:left-6">
+                        ♡ Karya lokal, cerita kita.
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Carousel Section -->
-    <section class="py-12">
-        <h2 class="text-center text-2xl font-bold mb-8">Daftar UMKM Lemahmulya</h2>
-        <div class="overflow-x-auto no-scrollbar px-4">
-            <div class="flex gap-6 w-max">
-                <!-- Example Card -->
-                @foreach($umkms->take(6) as $umkm)
-                <div class="flex-shrink-0 w-64 bg-white rounded-lg shadow hover:shadow-xl transition-all p-4">
-                    <img src="{{ asset('profile_photos/' . $umkm->profile_photo) }}" alt="{{ $umkm->nama_umkm }}" class="w-full h-40 object-cover rounded-md mb-4">
-                    <h3 class="text-lg font-semibold">{{ $umkm->nama_umkm }}</h3>
-                    <p class="text-sm text-gray-600">Kategori: {{ $umkm->kategori_umkm }}</p>
-                    <p class="text-sm text-gray-600">Alamat: {{ $umkm->alamat_umkm }}</p>
-                    <a href="{{ url('detail_umkm/' . $umkm->id) }}" class="text-blue-600 mt-2 inline-block">Selengkapnya</a>
-                </div>
-                @endforeach
-                <div class="flex-shrink-0 w-64 bg-blue-100 rounded-lg flex items-center justify-center text-xl font-bold text-blue-800 cursor-pointer" onclick="window.location='{{ url('daftar_umkm') }}'">
-                    JELAJAHI
-                </div>
+    <!-- Category Filters -->
+    <section class="bg-white px-5 pb-4 sm:px-8 lg:px-12">
+        <div class="mx-auto max-w-[1240px]">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-bold text-[#073f3b] sm:text-xl">Jelajahi kategori usaha</h2>
+                <a href="{{ url('/daftar_umkm') }}" class="text-xs font-semibold text-[#147b7b] hover:text-[#0e6262] sm:text-sm">Semua kategori</a>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                @forelse($categories as $category)
+                    <a href="{{ url('/daftar_umkm') . '?q=' . urlencode($category) }}" class="inline-flex min-w-max items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 shadow-sm transition hover:border-[#147b7b] hover:bg-[#edf8f5] hover:text-[#147b7b]">
+                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#edf8f5] text-xs font-bold text-[#147b7b]">{{ strtoupper(substr($category, 0, 1)) }}</span>
+                        {{ $category }}
+                    </a>
+                @empty
+                    <span class="text-sm text-slate-400">Kategori usaha akan tampil setelah data UMKM tersedia.</span>
+                @endforelse
             </div>
         </div>
     </section>
 
-    <!-- Additional Banner with CTA -->
-    <section class="relative">
-        <img src="/img/banner%20daftar.jpg" alt="Banner Daftar" class="w-full object-cover">
+    <!-- UMKM Carousel -->
+    <section class="bg-white px-5 py-10 sm:px-8 lg:px-12">
+        <div class="mx-auto max-w-[1240px]">
+            @include('components.umkm-carousel', ['umkms' => $umkms->take(8)])
+        </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="text-center text-sm py-6 bg-gray-100 text-gray-600">
-        &copy; 2025 UMKM Lemahmulya. All rights reserved.
-    </footer>
+    <!-- Product Carousel -->
+    <section class="bg-[#f8fbfa] px-5 py-10 sm:px-8 lg:px-12">
+        <div class="mx-auto max-w-[1240px]">
+            @include('components.product-carousel', ['products' => $products])
+        </div>
+    </section>
 
-    <!-- Scripts -->
-    <script>
-        const hamburger = document.getElementById('hamburger');
-        const mobileMenu = document.getElementById('mobileMenu');
-        hamburger.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.getElementById('dropdownButton');
-            const dropdownMenu = document.getElementById('dropdownMenu');
+    @include('components.footer')
 
-            dropdownButton.addEventListener('click', function(e) {
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('hidden');
-            });
-
-            document.addEventListener('click', function() {
-                dropdownMenu.classList.add('hidden');
-            });
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileDropdownButton = document.getElementById('mobileDropdownButton');
-            const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
-
-            if (mobileDropdownButton) {
-                mobileDropdownButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    mobileDropdownMenu.classList.toggle('hidden');
-                });
-
-                document.addEventListener('click', function() {
-                    mobileDropdownMenu.classList.add('hidden');
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

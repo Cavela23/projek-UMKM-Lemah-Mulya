@@ -6,193 +6,91 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar UMKM Lemahmulya</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .umkm-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 32px 20px;
-            margin-top: 32px;
-        }
-        .umkm-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
-            padding: 18px 16px 16px 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            transition: box-shadow 0.2s;
-        }
-        .umkm-card:hover {
-            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.13);
-        }
-        .umkm-card img {
-            width: 100%;
-            max-width: 180px;
-            height: 140px;
-            object-fit: cover;
-            border-radius: 12px;
-            margin-bottom: 12px;
-        }
-        .umkm-card .btn {
-            margin-top: 10px;
-            padding: 7px 18px;
-            border-radius: 8px;
-            background: #4f46e5;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            font-size: 1em;
-        }
-        .umkm-searchbar {
-            width: 100%;
-            max-width: 420px;
-            margin: 32px auto 0 auto;
-            display: flex;
-            align-items: center;
-        }
-        .umkm-searchbar input {
-            flex: 1;
-            padding: 10px 16px;
-            border-radius: 8px 0 0 8px;
-            border: 1px solid #d1d5db;
-            font-size: 1em;
-            outline: none;
-        }
-        .umkm-searchbar button {
-            padding: 10px 18px;
-            border-radius: 0 8px 8px 0;
-            border: 1px solid #4f46e5;
-            background: #4f46e5;
-            color: #fff;
-            font-size: 1em;
-            cursor: pointer;
-        }
-    </style>
 </head>
 
 <body class="bg-white text-gray-800">
-    <!-- Header -->
-    <header class="w-full fixed top-0 bg-white shadow z-50">
-        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-            <!-- Left nav -->
-            <nav class="hidden md:flex gap-6 text-sm font-semibold">
-                <a href="/" class="hover:text-blue-600">BERANDA</a>
-                <a href="/daftar_umkm" class="hover:text-blue-600">UMKM</a>
-            </nav>
-            <!-- Logo -->
-            <div class="text-xl font-bold text-blue-900 italic">
-                <img src="/img/UMKM(1).png" alt="UMKM Lemahmulya" class="h-8">
-            </div>
-            <!-- Right nav -->
-            <nav class="hidden md:flex gap-6 text-sm font-semibold">
-                <a href="/daftar_produk" class="hover:text-blue-600">PRODUK</a>
-                @if(session('user_id'))
-                <div class="flex items-center gap-2 relative">
-                    <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-                    <span>{{ session('user_name') }}</span>
-                    <button id="dropdownButton" class="text-gray-600 focus:outline-none">&#9660;</button>
-                    <div id="dropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                        <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                        <form method="POST" action="{{ url('logout') }}" class="block">
-                            @csrf
-                            <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                        </form>
-                    </div>
-                </div>
-                @else
-                <a href="/login" class="hover:text-blue-600">MASUK</a>
-                @endif
-            </nav>
-            <!-- Mobile Hamburger -->
-            <div class="md:hidden">
-                <button id="hamburger" class="text-2xl">&#9776;</button>
-            </div>
+    @include('components.navbar')
+
+    <main class="mx-auto max-w-7xl px-5 pb-16 pt-[112px] sm:px-8 lg:px-12">
+        <div class="mb-5 flex items-center justify-between text-[11px] text-slate-400 sm:text-xs">
+            <span class="inline-flex items-center gap-1.5">
+                <svg class="h-3.5 w-3.5 text-[#147b7b]" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 21s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" />
+                    <circle cx="12" cy="9" r="2.2" stroke-width="1.8" />
+                </svg>
+                Dari warga, untuk Lemahmulya.
+            </span>
+            <span class="hidden sm:inline">Data contoh</span>
         </div>
-        <!-- Mobile Menu -->
-        <div id="mobileMenu" class="hidden md:hidden flex-col bg-white px-4 py-4 space-y-2 text-sm font-semibold">
-            <a href="/" class="block hover:text-blue-600">BERANDA</a>
-            <a href="/daftar_umkm" class="block hover:text-blue-600">UMKM</a>
-            <a href="/daftar_produk" class="block hover:text-blue-600">PRODUK</a>
-            @if(session('user_id'))
-            <div class="flex items-center gap-2">
-                <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="User" class="w-8 h-8 rounded-full">
-                <span>{{ session('user_name') }}</span>
-                <button id="mobileDropdownButton" class="text-gray-600 focus:outline-none">&#9660;</button>
-                <div id="mobileDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
-                    <a href="{{ url('profile_page') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profil</a>
-                    <form method="POST" action="{{ url('logout') }}" class="block">
-                        @csrf
-                        <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
-                    </form>
+
+        <section class="rounded-[22px] border border-[#d6e8e4] bg-[#edf8f5] px-6 py-8 sm:px-10 sm:py-10">
+            <div class="flex flex-col justify-between gap-6 lg:flex-row lg:items-end">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#147b7b] sm:text-xs">Ruang usaha lokal</p>
+                    <h1 class="mt-2 max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-[#073f3b] sm:text-4xl">Temukan usaha lokal Lemahmulya.</h1>
+                    <p class="mt-3 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">Kenali usaha di sekitar kita dan dukung produk karya warga desa.</p>
                 </div>
+                <span class="hidden rounded-full bg-white px-3 py-1.5 text-[10px] font-medium text-slate-500 shadow-sm lg:inline-flex">{{ $umkms->count() }} usaha terdaftar</span>
             </div>
+
+            <form method="GET" action="{{ url('/daftar_umkm') }}" class="mt-7 grid max-w-2xl grid-cols-[minmax(0,1fr)_auto] overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm focus-within:ring-2 focus-within:ring-[#147b7b]/30">
+                <label for="umkm-search" class="sr-only">Cari usaha lokal</label>
+                <div class="flex min-w-0 items-center gap-2 px-3 sm:px-4">
+                    <svg class="h-4 w-4 shrink-0 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="m21 21-4.35-4.35m2.1-5.15a7.25 7.25 0 1 1-14.5 0 7.25 7.25 0 0 1 14.5 0Z" />
+                    </svg>
+                    <input id="umkm-search" type="search" name="q" value="{{ request('q') }}" placeholder="Cari nama usaha, kategori, atau lokasi..." class="h-12 min-w-0 w-full border-0 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400">
+                </div>
+                <button type="submit" class="h-12 min-w-[68px] bg-[#147b7b] px-4 text-sm font-semibold text-white transition hover:bg-[#0e6262] focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-white">Cari</button>
+            </form>
+        </section>
+
+        <section class="mt-8">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-xl font-extrabold tracking-tight text-[#073f3b]">Pilih kategori usaha</h2>
+                <a href="{{ url('/daftar_umkm') }}" class="text-xs font-semibold text-[#147b7b] transition hover:text-[#0e6262] sm:text-sm">Reset filter</a>
+            </div>
+            <div class="flex gap-3 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <a href="{{ url('/daftar_umkm') }}" class="inline-flex min-w-max items-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition {{ request('q') ? 'border-slate-200 bg-white text-slate-600 hover:border-[#147b7b] hover:bg-[#edf8f5] hover:text-[#147b7b]' : 'border-[#147b7b] bg-[#147b7b] text-white' }}">
+                    <span aria-hidden="true">▦</span> Semua usaha
+                </a>
+                @forelse($categories as $category)
+                    <a href="{{ url('/daftar_umkm') . '?q=' . urlencode($category) }}" class="inline-flex min-w-max items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-600 shadow-sm transition hover:border-[#147b7b] hover:bg-[#edf8f5] hover:text-[#147b7b]">
+                        <span class="flex h-6 w-6 items-center justify-center rounded-full bg-[#edf8f5] text-xs font-bold text-[#147b7b]">{{ strtoupper(substr($category, 0, 1)) }}</span>
+                        {{ $category }}
+                    </a>
+                @empty
+                    <span class="py-3 text-sm text-slate-400">Belum ada kategori usaha.</span>
+                @endforelse
+            </div>
+        </section>
+
+        <section class="mt-10">
+            <div class="mb-6 flex items-end justify-between gap-4">
+                <div>
+                    <p class="text-[10px] font-bold uppercase tracking-[0.18em] text-[#147b7b] sm:text-xs">Kenali tetangga</p>
+                    <h2 class="mt-1 text-2xl font-extrabold tracking-tight text-[#073f3b] sm:text-3xl">Usaha lokal Lemahmulya</h2>
+                </div>
+                <span class="text-xs text-slate-400 sm:text-sm">{{ $umkms->count() }} hasil</span>
+            </div>
+
+            @if($umkms->isNotEmpty())
+                <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    @foreach($umkms as $umkm)
+                        @include('components.umkm-card', ['umkm' => $umkm])
+                    @endforeach
+                </div>
             @else
-            <a href="/login" class="block hover:text-blue-600">MASUK</a>
+                <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-16 text-center">
+                    <h3 class="font-bold text-[#073f3b]">Usaha tidak ditemukan</h3>
+                    <p class="mt-2 text-sm text-slate-500">Coba gunakan kata kunci pencarian yang berbeda.</p>
+                    <a href="{{ url('/daftar_umkm') }}" class="mt-5 inline-flex rounded-lg bg-[#147b7b] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#0e6262]">Lihat semua usaha</a>
+                </div>
             @endif
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <main class="pt-24 max-w-7xl mx-auto px-4 pb-16">
-        <form class="umkm-searchbar" method="GET" action="">
-            <input type="text" name="q" placeholder="Cari UMKM, kategori, atau alamat..." value="{{ request('q') }}">
-            <button type="submit">Cari</button>
-        </form>
-
-        <div class="umkm-grid">
-            @foreach($umkms->where('role', 'user') as $umkm)
-            <div class="umkm-card">
-            <img src="{{ isset($umkm) && !empty($umkm->profile_photo) ? asset('profile_photos/' . $umkm->profile_photo) : asset('img/user_icon.png') }}" alt="Foto {{ $umkm->nama_umkm ?? $umkm->name ?? '-' }}">
-                <h3>{{ $umkm->nama_umkm ?? '-' }}</h3>
-                <p>Kategori: {{ $umkm->kategori_umkm ?? '-' }}</p>
-                <p>Alamat: {{ $umkm->alamat_umkm ?? '-' }}</p>
-                <p class="text-sm text-gray-500">Email: {{ $umkm->email ?? '-' }}</p>
-                <p class="text-sm text-gray-500">No HP: {{ $umkm->phone ?? '-' }}</p>
-                <a href="{{ url('detail_umkm/' . $umkm->id) }}" class="btn">Selengkapnya</a>
-            </div>
-            @endforeach
-        </div>
+        </section>
     </main>
 
-    <!-- Scripts -->
-    <script>
-        const hamburger = document.getElementById('hamburger');
-        const mobileMenu = document.getElementById('mobileMenu');
-        hamburger.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.getElementById('dropdownButton');
-            const dropdownMenu = document.getElementById('dropdownMenu');
-            if (dropdownButton && dropdownMenu) {
-                dropdownButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    dropdownMenu.classList.toggle('hidden');
-                });
-                document.addEventListener('click', function() {
-                    dropdownMenu.classList.add('hidden');
-                });
-            }
-        });
-    </script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileDropdownButton = document.getElementById('mobileDropdownButton');
-            const mobileDropdownMenu = document.getElementById('mobileDropdownMenu');
-            if (mobileDropdownButton && mobileDropdownMenu) {
-                mobileDropdownButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    mobileDropdownMenu.classList.toggle('hidden');
-                });
-                document.addEventListener('click', function() {
-                    mobileDropdownMenu.classList.add('hidden');
-                });
-            }
-        });
-    </script>
+    @include('components.footer')
 </body>
 
 </html>
