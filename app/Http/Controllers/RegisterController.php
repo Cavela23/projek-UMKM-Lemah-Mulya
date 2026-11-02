@@ -16,7 +16,6 @@ class RegisterController extends Controller
             'phone' => 'required|string|max:20|unique:users,phone',
             'email' => 'required|email|max:255|unique:users,email',
             'password' => 'required|string|min:6',
-            'role' => 'in:umkm,admin', // opsional, default umkm
         ]);
 
         if ($validator->fails()) {
@@ -29,7 +28,7 @@ class RegisterController extends Controller
             'phone' => $request->phone,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? 'umkm',
+            'role' => 'user',
         ]);
 
         // Optionally log in the user or redirect

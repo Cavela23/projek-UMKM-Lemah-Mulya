@@ -135,7 +135,16 @@ Route::post('/produk/{id}/update', [ProdukController::class, 'update'])->name('p
 Route::match(['put', 'patch'], '/produk/{id}', [ProdukController::class, 'update'])->name('produk.update.patch');
 
 Route::get('produk/edit/{id}', function($id) {
+    if (!session('user_id')) {
+        return redirect('login');
+    }
+
     $produk = Produk::findOrFail($id);
+    $user = User::find(session('user_id'));
+    if (!$user || ($user->role !== 'admin' && (int) $produk->user_id !== (int) $user->id)) {
+        abort(403);
+    }
+
     return view('edit_produk', compact('produk'));
 });
 

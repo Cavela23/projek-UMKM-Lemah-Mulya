@@ -33,9 +33,16 @@ class UmkmController extends Controller
     // Fungsi untuk menghapus user UMKM (hanya oleh admin)
     public function destroy($id)
     {
+        $requester = session('user_id') ? User::find(session('user_id')) : null;
+        if (!$requester) {
+            abort(401);
+        }
+        if ($requester->role !== 'admin') {
+            abort(403);
+        }
+
         $user = User::findOrFail($id);
-        // Pastikan hanya user dengan role 'user' yang bisa dihapus
-        if ($user->role !== 'user') {
+        if (!in_array($user->role, ['user', 'umkm'], true)) {
             return redirect()->back()->with('error', 'Akun ini tidak dapat dihapus.');
         }
         $user->delete();

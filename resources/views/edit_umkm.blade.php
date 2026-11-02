@@ -29,13 +29,13 @@
                     <small class="mt-1 block text-[7px] tracking-[0.13em] text-slate-400">RUANG UMKM LOKAL</small>
                 </span>
             </a>
-            <nav class="flex-1 space-y-1 px-4 py-7" aria-label="Navigasi profil">
+            <nav class="flex-1 space-y-1 px-4 py-7" aria-label="Navigasi profil usaha">
                 <p class="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Menu utama</p>
                 <a href="{{ url('/') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">⌂</span> Beranda</a>
-                <a href="{{ url('/daftar_umkm') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">▦</span> Daftar UMKM</a>
-                <a href="{{ url('/daftar_produk') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◫</span> Produk</a>
+                <a href="{{ route('umkm.edit') }}" class="flex items-center gap-3 rounded-lg bg-[#e8f6f3] px-3 py-3 text-sm font-bold text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-[#147b7b] text-xs text-white">▦</span> Profil UMKM</a>
+                <a href="{{ url('profile_page?tab=produk') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◫</span> Produk saya</a>
                 <p class="px-3 pb-2 pt-8 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Akun</p>
-                <a href="{{ url('profile_page') }}" class="flex items-center gap-3 rounded-lg bg-[#e8f6f3] px-3 py-3 text-sm font-bold text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-[#147b7b] text-xs text-white">◎</span> Profil pengguna</a>
+                <a href="{{ url('profile_page') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◎</span> Profil pengguna</a>
             </nav>
             <div class="border-t border-[#edf3f1] p-4">
                 <form method="POST" action="{{ url('logout') }}">@csrf<button class="flex w-full items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium text-slate-500 transition hover:bg-red-50 hover:text-red-600"><span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">↪</span> Keluar</button></form>

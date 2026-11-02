@@ -10,8 +10,12 @@
         ->map(fn ($name) => strtoupper(substr($name, 0, 1)))
         ->implode('');
     $productsQuery = \App\Models\Produk::with('user');
-    if (!$isAdmin && isset($user) && $user) {
-        $productsQuery->where('user_id', $user->id);
+    if ($isAdmin) {
+        $productsQuery->latest();
+    } elseif (isset($user) && $user) {
+        $productsQuery->where('user_id', $user->id)->latest();
+    } else {
+        $productsQuery->whereRaw('1 = 0');
     }
     $products = $productsQuery
         ->when(request('search_produk'), function ($query, $search) {
@@ -19,6 +23,8 @@
         })
         ->latest()
         ->get();
+    $adminUmkmCount = $isAdmin ? \App\Models\User::whereIn('role', ['user', 'umkm'])->count() : 0;
+    $adminProductCount = $isAdmin ? \App\Models\Produk::count() : 0;
 @endphp
 <!DOCTYPE html>
 <html lang="id">
@@ -41,20 +47,20 @@
                     <small class="mt-1 block text-[7px] tracking-[0.13em] text-slate-400">RUANG UMKM LOKAL</small>
                 </span>
             </a>
-            <nav class="flex-1 space-y-1 px-4 py-7" aria-label="Navigasi profil">
+            <nav class="flex-1 space-y-1 px-4 py-7" aria-label="{{ $isAdmin ? 'Navigasi administrator' : 'Navigasi profil' }}">
                 <p class="px-3 pb-3 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Menu utama</p>
                 <a href="{{ url('/') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
                     <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">⌂</span> Beranda
                 </a>
-                <a href="{{ route('umkm.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">▦</span> Profil UMKM
+                <a href="{{ $isAdmin ? url('profile_page') : route('umkm.edit') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm {{ $isAdmin ? 'font-bold text-[#147b7b] bg-[#e8f6f3]' : 'font-medium text-slate-500 hover:bg-[#eff9f7] hover:text-[#147b7b]' }}">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md {{ $isAdmin ? 'bg-[#147b7b] text-white' : 'bg-slate-100' }} text-xs">▦</span> {{ $isAdmin ? 'Kelola UMKM' : 'Profil UMKM' }}
                 </a>
                 <a href="{{ url('profile_page?tab=produk') }}" class="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium text-slate-500 transition hover:bg-[#eff9f7] hover:text-[#147b7b]">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◫</span> Produk saya
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-slate-100 text-xs">◫</span> {{ $isAdmin ? 'Kelola produk' : 'Produk saya' }}
                 </a>
                 <p class="px-3 pb-2 pt-8 text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">Akun</p>
-                <a href="{{ url('profile_page') }}" class="flex items-center gap-3 rounded-lg bg-[#e8f6f3] px-3 py-3 text-sm font-bold text-[#147b7b]">
-                    <span class="flex h-7 w-7 items-center justify-center rounded-md bg-[#147b7b] text-xs text-white">◎</span> Profil pengguna
+                <a href="{{ url('profile_page') }}" class="flex items-center gap-3 rounded-lg {{ $isAdmin ? 'text-slate-500 hover:bg-[#eff9f7] hover:text-[#147b7b]' : 'bg-[#e8f6f3] font-bold text-[#147b7b]' }} px-3 py-3 text-sm">
+                    <span class="flex h-7 w-7 items-center justify-center rounded-md {{ $isAdmin ? 'bg-slate-100' : 'bg-[#147b7b] text-white' }} text-xs">◎</span> Profil pengguna
                 </a>
             </nav>
             <div class="border-t border-[#edf3f1] p-4">
@@ -74,8 +80,8 @@
                         <img src="{{ asset('img/logo-web-umkm.png') }}" alt="Beranda" class="h-9 w-9 object-contain">
                     </a>
                     <div>
-                        <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#147b7b]">Akun saya</p>
-                        <h1 class="mt-1 text-xl font-extrabold text-[#073f3b] sm:text-2xl">Profil pengguna</h1>
+                        <p class="text-[10px] font-semibold uppercase tracking-[0.15em] text-[#147b7b]">{{ $isAdmin ? 'Administrator' : 'Akun saya' }}</p>
+                        <h1 class="mt-1 text-xl font-extrabold text-[#073f3b] sm:text-2xl">{{ $isAdmin ? 'Kelola UMKM' : 'Profil pengguna' }}</h1>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -100,6 +106,22 @@
                     </div>
                 @endif
 
+                @if($isAdmin)
+                    <section class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)] sm:p-7">
+                        <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div class="flex items-center gap-4">
+                                <div class="flex h-[68px] w-[68px] shrink-0 items-center justify-center rounded-full bg-[#e2f1ee] text-xl font-extrabold text-[#147b7b]">{{ $initials ?: 'SA' }}</div>
+                                <div><p class="text-xs text-slate-400">Administrator sistem</p><h2 class="mt-1 text-xl font-extrabold text-[#073f3b]">{{ $user->name ?? 'Super Admin' }}</h2><p class="mt-1 text-sm text-slate-400">{{ $user->email ?? 'admin@mail.com' }}</p></div>
+                            </div>
+                            <span class="inline-flex w-fit items-center gap-2 rounded-full bg-[#e2f2ef] px-3 py-2 text-xs font-bold text-[#147b7b]"><span class="h-2 w-2 rounded-full bg-emerald-500"></span> Akun aktif</span>
+                        </div>
+                    </section>
+                    <div class="mt-7 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        <div class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)]"><p class="text-xs text-slate-400">Total UMKM</p><p class="mt-2 text-3xl font-extrabold text-[#073f3b]">{{ $adminUmkmCount }}</p><p class="mt-1 text-xs text-[#147b7b]">Usaha terdaftar</p></div>
+                        <div class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)]"><p class="text-xs text-slate-400">Total produk</p><p class="mt-2 text-3xl font-extrabold text-[#073f3b]">{{ $adminProductCount }}</p><p class="mt-1 text-xs text-[#147b7b]">Produk dipublikasikan</p></div>
+                        <div class="rounded-xl border border-[#e0ece9] bg-[#eaf6f3] p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)]"><p class="text-xs text-[#147b7b]">Status layanan</p><p class="mt-2 text-xl font-extrabold text-[#073f3b]">Berjalan baik</p><p class="mt-1 text-xs text-slate-500">Data terhubung ke sistem</p></div>
+                    </div>
+                @else
                 <section class="rounded-xl border border-[#e0ece9] bg-white p-5 shadow-[0_2px_12px_rgba(27,74,70,0.04)] sm:p-7">
                     <div class="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
                         <div class="flex items-center gap-4">
@@ -131,12 +153,13 @@
                         @endif
                     </div>
                 </section>
+                @endif
 
                 <div class="mt-7 border-b border-[#dfeae8]">
                     <nav class="flex gap-7 overflow-x-auto" aria-label="Tab profil">
                         @if($isAdmin)
                             <button type="button" data-tab="umkm" class="whitespace-nowrap border-b-2 border-[#147b7b] pb-3 text-sm font-bold text-[#147b7b]">Kelola UMKM</button>
-                            <button type="button" data-tab="produk" class="whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">Daftar produk</button>
+                            <button type="button" data-tab="produk" class="whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">Kelola produk</button>
                         @else
                             <button type="button" data-tab="overview" class="whitespace-nowrap border-b-2 border-[#147b7b] pb-3 text-sm font-bold text-[#147b7b]">Profil pengguna</button>
                             <button type="button" data-tab="produk" class="whitespace-nowrap border-b-2 border-transparent pb-3 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">Produk saya</button>

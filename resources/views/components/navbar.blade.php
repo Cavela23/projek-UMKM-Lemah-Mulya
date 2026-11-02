@@ -3,6 +3,11 @@
         $isHome = request()->is('/');
         $isUmkm = request()->is('daftar_umkm');
         $isProducts = request()->is('daftar_produk');
+        $sessionProfilePhoto = session('user_profile_photo');
+        $profilePhotoUrl = $sessionProfilePhoto
+            && file_exists(public_path('profile_photos/' . $sessionProfilePhoto))
+            ? asset('profile_photos/' . $sessionProfilePhoto)
+            : asset('img/U.png');
     @endphp
     <div class="mx-auto flex h-[88px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
         <a href="{{ url('/') }}" class="flex shrink-0 items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#087f7b]" aria-label="Beranda UMKM Lemahmulya">
@@ -32,7 +37,7 @@
             @if(session('user_id'))
                 <div class="relative">
                     <button type="button" data-account-toggle class="flex items-center gap-2 rounded-full py-1 pl-1 pr-2 text-sm font-medium text-slate-600 transition hover:text-[#087f7b] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#087f7b]" aria-expanded="false" aria-controls="desktop-account-menu">
-                        <img src="{{ session('user_profile_photo') ? asset('storage/profile_photos/' . session('user_profile_photo')) : asset('img/user_icon.png') }}" alt="" class="h-8 w-8 rounded-full object-cover">
+                        <img src="{{ $profilePhotoUrl }}" alt="{{ session('user_name') }}" class="h-8 w-8 rounded-full object-cover">
                         <span>{{ session('user_name') }}</span>
                         <svg class="h-4 w-4 text-slate-400 transition-transform" data-account-chevron fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7" /></svg>
                     </button>
