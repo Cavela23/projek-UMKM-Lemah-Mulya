@@ -1,138 +1,88 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login UMKM Lemahmulya</title>
+    <title>Masuk - UMKM Lemahmulya</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', 'Poppins', sans-serif; }
-    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="flex flex-col lg:flex-row items-center justify-center min-h-screen w-full">
-        <!-- Left Side -->
-        <div class="bg-white w-full lg:w-1/2 px-8 py-10 lg:px-20 lg:py-16 shadow-md rounded-lg">
-            <div class="flex items-center gap-2 mb-4">
-                <img src="/img/UMKM(1).png" alt="Logo" class="h-10">
-                <span class="text-purple-600 font-semibold text-lg">Lemahmulya</span>
-            </div>
 
-            <button onclick="window.location='{{ url('/') }}'" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded mb-6">
-                Kembali
-            </button>
+<body class="min-h-screen bg-[#f7fbfa] text-slate-700">
+    <main class="grid min-h-screen lg:grid-cols-2">
+        <section class="flex items-center justify-center px-5 py-10 sm:px-10 lg:px-16 xl:px-24">
+            <div class="w-full max-w-[460px]">
+                <a href="{{ url('/') }}" class="inline-flex items-center gap-2.5 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b]" aria-label="Kembali ke beranda">
+                    <img src="{{ asset('img/logo-web-umkm.png') }}" alt="" class="h-12 w-12 object-contain">
+                    <span class="leading-none">
+                        <strong class="block text-[13px] font-extrabold tracking-tight text-[#073f3b]">UMKM DESA LEMAHMULYA</strong>
+                        <small class="mt-1 block text-[8px] font-medium tracking-[0.16em] text-[#073f3b]">RUANG UMKM LOKAL</small>
+                    </span>
+                </a>
 
-            <h1 class="text-2xl font-bold mb-2">Hallo, Selamat Datang</h1>
-            <p class="text-gray-600 mb-6">Hey, selamat kembali! Silahkan login untuk melanjutkan</p>
+                <a href="{{ url('/') }}" class="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-slate-400 transition hover:text-[#147b7b]">
+                    <span aria-hidden="true">←</span> Kembali ke beranda
+                </a>
+                <h1 class="mt-8 text-3xl font-extrabold tracking-tight text-[#073f3b] sm:text-4xl">Selamat datang kembali.</h1>
+                <p class="mt-3 text-sm leading-6 text-slate-500">Masuk untuk mengelola usaha dan terhubung dengan warga Lemahmulya.</p>
 
-
-
-            @if($errors->any())
-            <div class="text-red-600 mb-4">
-                <ul class="list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            @endif
-
-
-            @if(session('modal_error'))
-            <!-- Modal Alert Error -->
-            <div 
-                x-data="{ open: true }" 
-                x-init="setTimeout(() => open = false, 3000)"
-                x-show="open" 
-                x-transition 
-                class="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-40 px-4"
-                :style="open ? 'display:flex' : 'display:none'"
-            >
-                <div @click.away="open = false" class="bg-white max-w-sm w-full p-6 rounded-xl shadow-lg text-center relative">
-                    <!-- Silang animasi SVG -->
-                    <svg class="mx-auto mb-4 text-red-500 w-16 h-16 animate-bounce" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                    <h2 class="text-xl font-semibold text-gray-800">Login Gagal!</h2>
-                    <p class="text-gray-600 mt-2">{{ session('modal_error') }}</p>
-                    <button 
-                        @click="open = false"
-                        class="mt-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md"
-                    >
-                        Tutup
-                    </button>
-                </div>
-            </div>
-            @endif
-
-            <form method="POST" action="{{ url('login') }}" class="space-y-4">
-                @csrf
-                <div>
-                    <label for="email" class="block text-sm font-medium">Email</label>
-                    <input type="email" name="email" id="email" required
-                        placeholder="stanley@gmail.com"
-                        class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-4 py-2 bg-gray-50" />
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium">Password</label>
-                    <div class="relative">
-                        <input type="password" name="password" id="password" required
-                            placeholder="Password"
-                            class="mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 px-4 py-2 bg-gray-50 pr-10" />
-                        <button type="button" id="togglePassword"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                            tabindex="-1">
-                            <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                            </svg>
-                        </button>
+                @if(session('success'))
+                    <div class="mt-6 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">{{ session('success') }}</div>
+                @endif
+                @if($errors->any())
+                    <div class="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <ul class="list-inside list-disc space-y-1">
+                            @foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach
+                        </ul>
                     </div>
-                </div>
+                @endif
+                @if(session('modal_error'))
+                    <div class="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">Email atau password yang dimasukkan tidak sesuai.</div>
+                @endif
 
-                <div class="flex items-center justify-between text-sm text-gray-600">
-                </div>
+                <form method="POST" action="{{ url('login') }}" class="mt-8 space-y-5">
+                    @csrf
+                    <div>
+                        <label for="email" class="mb-2 block text-sm font-semibold text-[#073f3b]">Email</label>
+                        <input type="email" name="email" id="email" value="{{ old('email') }}" required autocomplete="email" placeholder="nama@email.com" class="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#147b7b] focus:ring-2 focus:ring-[#147b7b]/20">
+                    </div>
+                    <div>
+                        <div class="mb-2 flex items-center justify-between">
+                            <label for="password" class="block text-sm font-semibold text-[#073f3b]">Password</label>
+                        </div>
+                        <div class="relative">
+                            <input type="password" name="password" id="password" required autocomplete="current-password" placeholder="Masukkan password" class="h-12 w-full rounded-lg border border-slate-200 bg-white px-4 pr-12 text-sm outline-none transition placeholder:text-slate-400 focus:border-[#147b7b] focus:ring-2 focus:ring-[#147b7b]/20">
+                            <button type="button" id="togglePassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#147b7b]" aria-label="Tampilkan password">
+                                <svg id="eyeIcon" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7Z" /><circle cx="12" cy="12" r="3" stroke-width="1.8" /></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="inline-flex h-12 w-full items-center justify-center rounded-lg bg-[#147b7b] text-sm font-bold text-white shadow-sm transition hover:bg-[#0e6262] hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-[#147b7b] focus-visible:ring-offset-2">Masuk</button>
+                </form>
 
-                <button type="submit" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded font-semibold">
-                    Sign In
-                </button>
-            </form>
+                <p class="mt-7 text-center text-sm text-slate-500">Belum punya akun?
+                    <a href="{{ url('register') }}" class="font-bold text-[#147b7b] transition hover:text-[#0e6262]">Daftarkan usaha</a>
+                </p>
+            </div>
+        </section>
 
-            <p class="text-center text-sm text-gray-600 mt-6">
-                Tidak Punya Akun?
-                <a href="{{ url('register') }}" class="text-purple-600 hover:underline">Sign Up</a>
-            </p>
-        </div>
+        <aside class="relative hidden overflow-hidden lg:block">
+            <img src="{{ asset('img/login_resource.jpg') }}" alt="Aktivitas dan produk UMKM Lemahmulya" class="absolute inset-0 h-full w-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#073f3b]/90 via-[#073f3b]/20 to-transparent"></div>
+            <div class="absolute bottom-12 left-12 right-12 text-white xl:left-16 xl:right-16">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-teal-100">Ruang UMKM lokal</p>
+                <h2 class="mt-3 text-3xl font-extrabold leading-tight xl:text-4xl">Tumbuh bersama,<br>mulai dari sekitar kita.</h2>
+                <p class="mt-4 max-w-md text-sm leading-6 text-teal-50">Temukan produk, cerita, dan usaha warga Desa Lemahmulya.</p>
+            </div>
+        </aside>
+    </main>
 
-        <!-- Right Side -->
-        <div class="hidden lg:flex w-1/2 items-center justify-center p-8">
-            <img src="/img/login_resource.jpg" alt="Login Illustration" class="max-w-md w-full rounded-lg shadow-lg">
-        </div>
-    </div>
-<script>
-document.getElementById('togglePassword').addEventListener('click', function () {
-    const pwd = document.getElementById('password');
-    const eye = document.getElementById('eyeIcon');
-    if (pwd.type === 'password') {
-        pwd.type = 'text';
-        eye.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.956 9.956 0 012.293-3.95m1.414-1.414A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.956 9.956 0 01-4.293 5.95M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3 3l18 18" />`;
-    } else {
-        pwd.type = 'password';
-        eye.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268-2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />`;
-    }
-});
-</script>
+    <script>
+        document.getElementById('togglePassword')?.addEventListener('click', () => {
+            const password = document.getElementById('password');
+            password.type = password.type === 'password' ? 'text' : 'password';
+        });
+    </script>
 </body>
+
 </html>
